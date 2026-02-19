@@ -3,6 +3,15 @@ import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
+export const config = {
+  api: {
+    bodyParser: false,
+    responseLimit: false,
+  },
+};
+
+export const maxDuration = 60;
+
 export async function GET() {
   const auth = await requireAdmin();
   if (auth) return auth;
