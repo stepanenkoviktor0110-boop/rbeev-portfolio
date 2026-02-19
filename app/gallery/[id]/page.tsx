@@ -15,7 +15,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
-      <Image src={`/uploads/${photo.filename}`} alt={photo.title} width={1400} height={1000} className="h-auto w-full rounded-xl object-contain" />
+      <Image src={`https://res.cloudinary.com/dt70epmum/image/upload/w_1400,q_auto,f_auto/${photo.filename}`} alt={photo.title} width={1400} height={1000} className="h-auto w-full rounded-xl object-contain" />
       <h1 className="mt-6 font-serif text-4xl text-accent">{photo.title}</h1>
       <p className="text-white/70">{photo.category.name}</p>
       <p className="text-white/70">{new Date(photo.createdAt).toLocaleDateString('ru-RU')}</p>

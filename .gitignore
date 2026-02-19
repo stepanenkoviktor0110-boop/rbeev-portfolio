@@ -18,3 +18,6 @@ prisma/dev.db
 # misc
 .DS_Store
 *.log
+
+.vercel
+.env*.local
