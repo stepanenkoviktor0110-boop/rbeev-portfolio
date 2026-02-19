@@ -110,7 +110,7 @@ export default function AdminGalleryPage() {
           <div key={p.id} className="card overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`/uploads/thumbs/${p.filename}`}
+              src={`https://res.cloudinary.com/dt70epmum/image/upload/w_600,c_limit,f_auto,q_auto/${p.filename}`}
               alt={p.title}
               className="h-48 w-full object-cover"
               style={{ objectPosition: `${p.focalX}% ${p.focalY}%` }}
@@ -150,7 +150,7 @@ export default function AdminGalleryPage() {
             <div className="relative flex items-start justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/uploads/${editing.filename}`}
+                src={`https://res.cloudinary.com/dt70epmum/image/upload/f_auto,q_auto/${editing.filename}`}
                 alt={editing.title}
                 className="max-h-[80vh] w-auto max-w-full cursor-crosshair rounded-lg"
                 onClick={handleFocalClick}
@@ -166,7 +166,7 @@ export default function AdminGalleryPage() {
             <div className="w-full overflow-hidden rounded-lg" style={{ height: '200px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/uploads/${editing.filename}`}
+                src={`https://res.cloudinary.com/dt70epmum/image/upload/f_auto,q_auto/${editing.filename}`}
                 alt=""
                 className="h-full w-full object-cover"
                 style={{ objectPosition: `${tempFocal.x}% ${tempFocal.y}%` }}

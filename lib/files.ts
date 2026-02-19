@@ -1,35 +1,43 @@
-import fs from 'fs/promises';
-import path from 'path';
-import sharp from 'sharp';
+import { v2 as cloudinary } from 'cloudinary';
 
-export const uploadDir = path.join(process.cwd(), 'public/uploads');
-export const thumbsDir = path.join(uploadDir, 'thumbs');
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-export async function ensureDirs() {
-  await fs.mkdir(uploadDir, { recursive: true });
-  await fs.mkdir(thumbsDir, { recursive: true });
-}
-
-export async function saveImage(file: File) {
-  await ensureDirs();
+export async function saveImage(file: File): Promise<string> {
   const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
   if (!validTypes.includes(file.type)) throw new Error('Неверный формат файла');
   if (file.size > 10 * 1024 * 1024) throw new Error('Файл больше 10MB');
 
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const filename = `${Date.now()}-${safeName}`;
-  const originalPath = path.join(uploadDir, filename);
-  const thumbPath = path.join(thumbsDir, filename);
-
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(originalPath, buffer);
-  await sharp(buffer).resize(600, undefined, { fit: 'inside', withoutEnlargement: true }).toFile(thumbPath);
-  return filename;
+
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      { folder: 'rbeev-portfolio', resource_type: 'image' },
+      (error, result) => {
+        if (error || !result) return reject(error || new Error('Ошибка загрузки'));
+        resolve(result.public_id);
+      }
+    ).end(buffer);
+  });
 }
 
-export async function removeImage(filename: string) {
-  await Promise.allSettled([
-    fs.unlink(path.join(uploadDir, filename)),
-    fs.unlink(path.join(thumbsDir, filename)),
-  ]);
+export async function removeImage(publicId: string): Promise<void> {
+  await cloudinary.uploader.destroy(publicId);
+}
+
+export function getImageUrl(publicId: string): string {
+  return cloudinary.url(publicId, { secure: true });
+}
+
+export function getThumbUrl(publicId: string): string {
+  return cloudinary.url(publicId, {
+    secure: true,
+    width: 600,
+    crop: 'limit',
+    fetch_format: 'auto',
+    quality: 'auto',
+  });
 }

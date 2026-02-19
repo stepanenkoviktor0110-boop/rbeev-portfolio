@@ -31,7 +31,7 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
         {filtered.map((photo, i) => (
           <button key={photo.id} onClick={() => setOpenedIndex(i)} className="group relative overflow-hidden rounded-xl text-left">
             <Image
-              src={`/uploads/thumbs/${photo.filename}`}
+              src={`https://res.cloudinary.com/dt70epmum/image/upload/w_600,c_limit,f_auto,q_auto/${photo.filename}`}
               alt={photo.title}
               width={300}
               height={200}

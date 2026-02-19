@@ -45,7 +45,7 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
         </button>
       )}
       <Image
-        src={`/uploads/${item.filename}`}
+        src={`https://res.cloudinary.com/dt70epmum/image/upload/f_auto,q_auto/${item.filename}`}
         alt={item.title}
         width={1200}
         height={900}
