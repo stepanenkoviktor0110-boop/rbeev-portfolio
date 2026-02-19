@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply text-white antialiased;
+  background-color: #0a0a0a;
+  background-image: radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      #2a1a06 0%,
+      #150e04 35%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 100%,
+      #1e1204 0%,
+      transparent 60%
+    );
+  background-attachment: fixed;
+}
+
+.section-title {
+  @apply font-serif text-3xl md:text-5xl text-accent;
+}
+
+.card {
+  @apply rounded-xl border border-white/10 bg-white/5 backdrop-blur;
+}
+
+/* Subtle vertical edge fade for sections */
+.fade-edges {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 5%,
+    black 95%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 5%,
+    black 95%,
+    transparent 100%
+  );
+}

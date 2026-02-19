@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Photo {
+  id          Int      @id @default(autoincrement())
+  title       String
+  filename    String
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  description String?
+  sortOrder   Int      @default(0)
+  focalX      Float    @default(50)
+  focalY      Float    @default(50)
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  photos Photo[]
+}
+
+model ContactRequest {
+  id           Int      @id @default(autoincrement())
+  name         String
+  contact      String
+  message      String
+  shootingDate String   @default("")
+  isRead       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Settings {
+  id           Int    @id @default(1)
+  aboutText    String @default("")
+  email        String @default("")
+  phone        String @default("")
+  telegram     String @default("")
+  whatsapp     String @default("")
+  instagram    String @default("")
+  heroTitle    String @default("")
+  heroSubtitle String @default("")
+  heroPhotoIds String @default("[]")
+}
