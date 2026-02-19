@@ -34,7 +34,7 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
           style={{ opacity: i === currentIndex ? 1 : 0 }}
         >
           <img
-            src={`/uploads/${photo.filename}`}
+            src={`https://res.cloudinary.com/dt70epmum/image/upload/w_1920,q_auto,f_auto/${photo.filename}`}
             alt=""
             className="h-full w-full object-cover"
             style={{ filter: 'blur(10px)', transform: 'scale(1.08)' }}
