@@ -1,4 +1,4 @@
-import AdminSidebar from '@/components/AdminSidebar';
+﻿import AdminSidebar from '@/components/AdminSidebar';
 import { isAuthorized } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
@@ -11,3 +11,4 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     </div>
   );
 }
+

@@ -17,13 +17,28 @@ model Photo {
   sortOrder   Int      @default(0)
   focalX      Float    @default(50)
   focalY      Float    @default(50)
+  showInGallery   Boolean  @default(false)
+  showInSlideshow Boolean  @default(false)
+  showInAbout     Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  @@index([categoryId])
+  @@index([sortOrder])
+  @@index([createdAt])
+  @@index([showInGallery, sortOrder])
+  @@index([showInGallery, id])
+  @@index([showInSlideshow, sortOrder])
+  @@index([showInAbout, sortOrder])
 }
 
 model Category {
-  id     Int     @id @default(autoincrement())
-  name   String  @unique
-  photos Photo[]
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  sortOrder Int     @default(0)
+  photos    Photo[]
+
+  @@index([sortOrder])
+  @@index([sortOrder, id])
 }
 
 model ContactRequest {
@@ -32,13 +47,32 @@ model ContactRequest {
   contact      String
   message      String
   shootingDate String   @default("")
+  personalDataConsentAt DateTime?
   isRead       Boolean  @default(false)
   createdAt    DateTime @default(now())
+  busyDates    BusyDate[]
+
+  @@index([createdAt])
+  @@index([isRead, createdAt])
+}
+
+model BusyDate {
+  id        Int            @id @default(autoincrement())
+  isoDate   String         @unique
+  requestId Int
+  request   ContactRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@index([requestId])
+  @@index([isoDate, requestId])
 }
 
 model Settings {
   id           Int    @id @default(1)
+  adminPasswordHash String @default("")
   aboutText    String @default("")
+  personalDataConsentText String @default("")
+  personalDataPolicyText String @default("")
   email        String @default("")
   phone        String @default("")
   telegram     String @default("")
@@ -46,5 +80,21 @@ model Settings {
   instagram    String @default("")
   heroTitle    String @default("")
   heroSubtitle String @default("")
+  workflowTitle String @default("")
+  workflowItems String @default("[]")
   heroPhotoIds String @default("[]")
+  aboutPhotoIds String @default("[]")
+  busyDates    String @default("")
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  authorName  String
+  text        String
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([sortOrder, id])
+  @@index([isPublished, sortOrder])
 }

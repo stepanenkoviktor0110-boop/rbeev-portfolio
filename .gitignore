@@ -21,3 +21,4 @@ prisma/dev.db
 
 .vercel
 .env*.local
+.admin-password

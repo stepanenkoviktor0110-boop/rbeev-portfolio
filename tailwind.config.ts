@@ -5,8 +5,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        base: '#0a0a0a',
-        accent: '#c8b891',
+        base: '#141319',
+        accent: '#c9a06a',
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'sans-serif'],

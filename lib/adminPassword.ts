@@ -1,21 +1,56 @@
 import bcrypt from 'bcryptjs';
 import fs from 'fs/promises';
 import path from 'path';
+import { prisma } from './prisma';
 
-const filePath = path.join(process.cwd(), '.admin-password');
+const legacyFilePath = path.join(process.cwd(), '.admin-password');
 
-async function readHash(): Promise<string | null> {
+function getInitialAdminPassword() {
+  const password = process.env.ADMIN_PASSWORD;
+  if (!password || password.length < 8) {
+    throw new Error('ADMIN_PASSWORD is required and must be at least 8 characters');
+  }
+  return password;
+}
+
+async function readLegacyHash(): Promise<string | null> {
   try {
-    return (await fs.readFile(filePath, 'utf-8')).trim();
+    const value = (await fs.readFile(legacyFilePath, 'utf-8')).trim();
+    return value || null;
   } catch {
     return null;
   }
 }
 
-export async function getPasswordHash() {
-  const stored = await readHash();
-  if (stored) return stored;
-  return bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10);
+async function getOrCreateSettings() {
+  return prisma.settings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1 },
+    select: { id: true, adminPasswordHash: true },
+  });
+}
+
+async function persistPasswordHash(hash: string) {
+  await prisma.settings.update({
+    where: { id: 1 },
+    data: { adminPasswordHash: hash },
+  });
+}
+
+async function getPasswordHash() {
+  const settings = await getOrCreateSettings();
+  if (settings.adminPasswordHash) return settings.adminPasswordHash;
+
+  const legacyHash = await readLegacyHash();
+  if (legacyHash) {
+    await persistPasswordHash(legacyHash);
+    return legacyHash;
+  }
+
+  const generated = await bcrypt.hash(getInitialAdminPassword(), 10);
+  await persistPasswordHash(generated);
+  return generated;
 }
 
 export async function verifyAdminPassword(password: string) {
@@ -24,6 +59,10 @@ export async function verifyAdminPassword(password: string) {
 }
 
 export async function setAdminPassword(password: string) {
+  if (password.length < 8) {
+    throw new Error('Password must be at least 8 characters');
+  }
   const hash = await bcrypt.hash(password, 10);
-  await fs.writeFile(filePath, hash, 'utf-8');
+  await getOrCreateSettings();
+  await persistPasswordHash(hash);
 }

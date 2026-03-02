@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
+import PublicContextMenuGuard from '@/components/PublicContextMenuGuard';
 import { Raleway, Cormorant_Garamond } from 'next/font/google';
 import './globals.css';
 
@@ -13,7 +15,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${sans.variable} ${serif.variable}`}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <PublicContextMenuGuard />
+        {children}
+        <CookieConsentBanner />
+      </body>
     </html>
   );
 }

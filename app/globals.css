@@ -4,6 +4,7 @@
 
 :root {
   color-scheme: dark;
+  --gold: 201 160 106;
 }
 
 body {
@@ -23,12 +24,49 @@ body {
   background-attachment: fixed;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .section-title {
   @apply font-serif text-3xl md:text-5xl text-accent;
 }
 
 .card {
-  @apply rounded-xl border border-white/10 bg-white/5 backdrop-blur;
+  @apply rounded-none border bg-white/5 backdrop-blur;
+  border-color: rgb(255 255 255 / 0.12);
+  background: rgb(22 21 27 / 0.66);
+}
+
+.ui-button {
+  @apply relative inline-flex items-center justify-center rounded-none border px-4 py-2 text-sm text-white/90 transition duration-150 ease-out;
+  border-color: rgb(255 255 255 / 0.22);
+  background: rgb(26 24 30 / 0.72);
+}
+
+.ui-button:hover:not(:disabled) {
+  transform: none;
+  border-color: rgb(255 255 255 / 0.38);
+  background: rgb(255 255 255 / 0.08);
+}
+
+.ui-button:active:not(:disabled) {
+  transform: none;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.ui-button:disabled {
+  @apply cursor-not-allowed opacity-40;
+}
+
+.ui-button-accent {
+  @apply border-accent text-accent;
+  background: rgb(var(--gold) / 0.16);
+}
+
+.ui-button-accent:hover:not(:disabled) {
+  border-color: rgb(var(--gold) / 0.92);
+  background: rgb(var(--gold) / 0.26);
 }
 
 /* Subtle vertical edge fade for sections */
@@ -47,4 +85,13 @@ body {
     black 95%,
     transparent 100%
   );
+}
+
+.availability-ribbon {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.availability-ribbon::-webkit-scrollbar {
+  display: none;
 }
