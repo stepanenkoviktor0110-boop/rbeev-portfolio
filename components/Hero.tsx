@@ -1,10 +1,12 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { resolvePhotoUrl } from '@/lib/photoUrl';
 
 interface HeroPhoto {
   id: number;
-  filename: string;
+  imageUrl: string;
   focalX: number;
   focalY: number;
 }
@@ -21,10 +23,7 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentPhoto = heroPhotos[currentIndex] ?? null;
   const subtitleRaw = settings.heroSubtitle?.trim() || '';
-  const bannedSubtitle = 'здесь живут моменты, которые почти не заметили себя';
-  const normalizedSubtitle = subtitleRaw.toLowerCase().replace(/[.!?]+$/g, '').trim();
-  const safeSubtitle =
-    normalizedSubtitle === bannedSubtitle ? 'Эмоции, свет и история в каждом кадре.' : subtitleRaw || 'Эмоции, свет и история в каждом кадре.';
+  const safeSubtitle = subtitleRaw || 'Моменты, где вы в центре и в своем ритме.';
 
   useEffect(() => {
     if (heroPhotos.length < 2) return;
@@ -40,26 +39,26 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
 
   return (
     <section className="relative flex h-screen w-full items-center justify-center overflow-hidden text-center">
-      {/* Blurred background slideshow */}
       {currentPhoto && (
         <div
           key={currentPhoto.id}
           className="absolute inset-0 transition-opacity duration-1000"
           style={{ opacity: 1 }}
         >
-          <img
-            src={`https://res.cloudinary.com/dt70epmum/image/upload/w_2560,c_limit,f_auto,q_auto:best,dpr_auto/${currentPhoto.filename}`}
+          <Image
+            src={resolvePhotoUrl(currentPhoto.imageUrl)}
             alt=""
-            className="h-full w-full object-cover"
+            fill
+            priority={currentIndex === 0}
+            sizes="100vw"
+            className="object-cover"
             style={{
               filter: 'blur(10px)',
               transform: 'scale(1.08)',
               objectPosition: `${currentPhoto.focalX}% ${currentPhoto.focalY}%`,
             }}
           />
-          {/* Dark overlay */}
           <div className="absolute inset-0 bg-black/55" />
-          {/* Edge blur vignette via mask */}
           <div
             className="absolute inset-0"
             style={{
@@ -67,14 +66,12 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
                 'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.92) 100%)',
             }}
           />
-
         </div>
       )}
 
-      {/* Content */}
       <div className="z-10 px-4">
         <h1 className="mb-4 font-serif text-4xl text-accent md:text-7xl">
-          {settings.heroTitle || 'Профессиональный фотограф'}
+          {settings.heroTitle || 'Фотография вашей истории'}
         </h1>
         <p className="mx-auto max-w-2xl text-[18px] text-white/85 md:text-[20px]">
           {safeSubtitle}

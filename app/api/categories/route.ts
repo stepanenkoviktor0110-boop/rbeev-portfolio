@@ -107,12 +107,18 @@ export async function PUT(request: Request) {
       return NextResponse.json(current);
     }
 
-    const current = categories[index];
-    const target = categories[targetIndex];
-    await prisma.$transaction([
-      prisma.category.update({ where: { id: current.id }, data: { sortOrder: target.sortOrder } }),
-      prisma.category.update({ where: { id: target.id }, data: { sortOrder: current.sortOrder } }),
-    ]);
+    const next = [...categories];
+    const [moved] = next.splice(index, 1);
+    next.splice(targetIndex, 0, moved);
+
+    await prisma.$transaction(
+      next.map((item, idx) =>
+        prisma.category.update({
+          where: { id: item.id },
+          data: { sortOrder: idx + 1 },
+        })
+      )
+    );
     const updated = await prisma.category.findUnique({
       where: { id: parsed.data.id },
       select: { id: true, name: true, sortOrder: true },

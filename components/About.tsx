@@ -1,10 +1,12 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { resolvePhotoUrl } from '@/lib/photoUrl';
 
 type AboutPhoto = {
   id: number;
-  filename: string;
+  imageUrl: string;
   title: string;
   focalX: number;
   focalY: number;
@@ -12,7 +14,7 @@ type AboutPhoto = {
 
 export default function About({ text, photos = [] }: { text: string; photos?: AboutPhoto[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const fallbackText = 'Фотограф с многолетним опытом в свадебных, портретных и репортажных съёмках.';
+  const fallbackText = 'Работаю с естественным светом и настроением, вниманием к эмоциям и настоящему моменту.';
   const sourceText = (text || fallbackText).trim();
   const paragraphs = sourceText
     .split(/\n{2,}/)
@@ -28,6 +30,8 @@ export default function About({ text, photos = [] }: { text: string; photos?: Ab
     }, 4000);
     return () => clearInterval(timer);
   }, [photos.length]);
+
+  const currentPhoto = photos[currentIndex] ?? null;
 
   return (
     <section id="about" className="fade-edges mx-auto max-w-6xl px-4 py-16">
@@ -45,7 +49,7 @@ export default function About({ text, photos = [] }: { text: string; photos?: Ab
             </div>
           )}
           <div className="mt-6 space-y-2 text-white/75">
-            <p>Если вы чувствуете, что готовы — напишите. Я отвечу.</p>
+            <p>Мне не интересно, как надо и правильно. Я про живое.</p>
             <a
               href="#contacts"
               className="inline-block text-accent/90 transition hover:text-accent"
@@ -57,18 +61,17 @@ export default function About({ text, photos = [] }: { text: string; photos?: Ab
 
         {photos.length > 0 && (
           <div className="relative h-64 overflow-hidden rounded-none border border-white/10 md:h-80">
-            {photos.map((photo, i) => (
-              <img
-                key={photo.id}
-                src={`https://res.cloudinary.com/dt70epmum/image/upload/w_2200,c_limit,f_auto,q_auto:best,dpr_auto/${photo.filename}`}
-                alt={photo.title}
-                className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1400ms]"
-                style={{
-                  opacity: i === currentIndex ? 1 : 0,
-                  objectPosition: `${photo.focalX}% ${photo.focalY}%`,
-                }}
+            {currentPhoto && (
+              <Image
+                key={currentPhoto.id}
+                src={resolvePhotoUrl(currentPhoto.imageUrl)}
+                alt={currentPhoto.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 40vw"
+                className="object-cover"
+                style={{ objectPosition: `${currentPhoto.focalX}% ${currentPhoto.focalY}%` }}
               />
-            ))}
+            )}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
           </div>
         )}

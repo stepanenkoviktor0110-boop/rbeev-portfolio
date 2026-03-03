@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 
 import type { Category, Photo } from '@prisma/client';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { displayCategoryName } from '@/lib/categoryLabel';
 import { COOKIE_CONSENT_EVENT, loadSitePrefs, saveSitePrefs } from '@/lib/cookieConsent';
+import { resolvePhotoUrl } from '@/lib/photoUrl';
 import Lightbox from './Lightbox';
 
 type P = Photo & { category: Category };
@@ -16,13 +17,18 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
   const [showAll, setShowAll] = useState(false);
   const [prefsReady, setPrefsReady] = useState(false);
 
+  const sortedCategories = useMemo(
+    () => [...categories].sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id),
+    [categories]
+  );
+
   const categoryOrder = useMemo(() => {
     const map = new Map<number, number>();
-    categories.forEach((category, index) => {
+    sortedCategories.forEach((category, index) => {
       map.set(category.id, index);
     });
     return map;
-  }, [categories]);
+  }, [sortedCategories]);
 
   const filtered = useMemo(() => {
     const base = !active ? photos : photos.filter((p) => p.categoryId === active);
@@ -30,9 +36,11 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
     return [...base].sort((a, b) => {
       const categoryScore = (categoryOrder.get(a.categoryId) ?? 0) - (categoryOrder.get(b.categoryId) ?? 0);
       if (categoryScore !== 0) return categoryScore;
-      return a.sortOrder - b.sortOrder;
+      return a.sortOrder - b.sortOrder || a.id - b.id;
     });
   }, [active, categoryOrder, photos]);
+
+  const isAllCategory = active === null;
 
   useEffect(() => {
     const prefs = loadSitePrefs();
@@ -69,8 +77,13 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
     });
   }, [active, prefsReady]);
 
-  const visibleItems = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE);
+  const visibleItems = isAllCategory
+    ? filtered.slice(0, INITIAL_VISIBLE)
+    : showAll
+      ? filtered
+      : filtered.slice(0, INITIAL_VISIBLE);
   const hasMore = filtered.length > INITIAL_VISIBLE;
+  const hiddenCount = isAllCategory ? Math.max(0, filtered.length - INITIAL_VISIBLE) : 0;
   const aspectPattern = ['aspect-[4/5]', 'aspect-square', 'aspect-[3/4]', 'aspect-[4/3]'];
 
   return (
@@ -86,7 +99,7 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
         >
           Все
         </button>
-        {categories.map((c) => (
+        {sortedCategories.map((c) => (
           <button
             key={c.id}
             onClick={() => setActive(c.id)}
@@ -99,7 +112,8 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
           </button>
         ))}
       </div>
-      <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visibleItems.map((photo) => {
           const indexInFiltered = filtered.findIndex((item) => item.id === photo.id);
           const aspectClass = aspectPattern[indexInFiltered % aspectPattern.length];
@@ -107,25 +121,36 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
             <button
               key={photo.id}
               onClick={() => setOpenedIndex(indexInFiltered >= 0 ? indexInFiltered : null)}
-              className="group relative mb-4 block w-full break-inside-avoid overflow-hidden text-left"
+              className="group relative block w-full overflow-hidden text-left"
             >
-              <Image
-                src={`https://res.cloudinary.com/dt70epmum/image/upload/w_1600,c_limit,f_auto,q_auto:best,dpr_auto/${photo.filename}`}
-                alt={photo.title}
-                width={1200}
-                height={900}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                quality={90}
-                className={`${aspectClass} h-auto w-full object-cover transition duration-500 group-hover:scale-[1.03]`}
-                style={{ objectPosition: `${photo.focalX}% ${photo.focalY}%` }}
-              />
+              <div className={`relative w-full overflow-hidden ${aspectClass}`}>
+                <Image
+                  src={resolvePhotoUrl(photo.imageUrl)}
+                  alt={photo.title}
+                  fill
+                  unoptimized
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                  className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                  style={{ objectPosition: `${photo.focalX}% ${photo.focalY}%` }}
+                />
+              </div>
               <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-[rgba(0,0,0,0.3)]" />
-          </button>
+            </button>
           );
         })}
+
+        {hiddenCount > 0 && (
+          <button
+            type="button"
+            className="flex h-11 w-full items-center justify-center rounded-none border border-dashed border-accent/50 bg-accent/10 px-4 text-sm text-accent transition hover:bg-accent/15"
+          >
+            Еще {hiddenCount} фото
+          </button>
+        )}
       </div>
+
       <div className="mt-8 text-center text-sm text-white/60">
-        {hasMore && !showAll && (
+        {!isAllCategory && hasMore && !showAll && (
           <button
             type="button"
             onClick={() => setShowAll(true)}
@@ -134,7 +159,7 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
             Смотреть все работы
           </button>
         )}
-        {hasMore && showAll && (
+        {!isAllCategory && hasMore && showAll && (
           <button
             type="button"
             onClick={() => setShowAll(false)}
@@ -144,6 +169,7 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
           </button>
         )}
       </div>
+
       <Lightbox
         items={filtered}
         index={openedIndex}

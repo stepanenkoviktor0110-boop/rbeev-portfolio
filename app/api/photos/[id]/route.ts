@@ -1,7 +1,7 @@
-import { removeImage } from '@/lib/files';
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
+import { deleteYandexDiskResource } from '@/lib/storage/yandexDisk';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -9,6 +9,7 @@ import { z } from 'zod';
 const photoUpdateSchema = z
   .object({
     title: z.string().trim().min(1).max(200).optional(),
+    imageUrl: z.string().url().max(2000).refine((value) => value.startsWith('https://')).optional(),
     description: z.string().max(5000).nullable().optional(),
     categoryId: z.coerce.number().int().positive().optional(),
     sortOrder: z.coerce.number().int().min(0).max(1_000_000).optional(),
@@ -76,8 +77,14 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     const id = parseId(p.id);
     if (!id) return NextResponse.json({ error: 'Некорректный id' }, { status: 400 });
 
-    const photo = await prisma.photo.delete({ where: { id }, select: { filename: true } });
-    await removeImage(photo.filename);
+    const photo = await prisma.photo.delete({ where: { id }, select: { storageKey: true } });
+    if (photo.storageKey) {
+      try {
+        await deleteYandexDiskResource(photo.storageKey);
+      } catch (error) {
+        console.error('Failed to delete Yandex Disk resource:', error);
+      }
+    }
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

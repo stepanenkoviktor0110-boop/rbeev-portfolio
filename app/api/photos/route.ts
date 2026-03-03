@@ -1,7 +1,7 @@
-import { saveImage } from '@/lib/files';
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
+import { uploadImageToYandexDisk } from '@/lib/storage/yandexDisk';
 import { NextResponse } from 'next/server';
 
 export const maxDuration = 60;
@@ -75,12 +75,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const filename = await saveImage(file);
+    const uploaded = await uploadImageToYandexDisk(file);
     const maxOrder = await prisma.photo.aggregate({ _max: { sortOrder: true } });
     const photo = await prisma.photo.create({
       data: {
         title,
-        filename,
+        imageUrl: uploaded.imageUrl,
+        storageKey: uploaded.storageKey,
         categoryId,
         description,
         sortOrder: (maxOrder._max.sortOrder ?? 0) + 1,

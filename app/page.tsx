@@ -48,16 +48,16 @@ export default async function HomePage() {
     prisma.photo.findMany({
       where: { showInGallery: true },
       include: { category: true },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: [{ category: { sortOrder: 'asc' } }, { sortOrder: 'asc' }, { id: 'asc' }],
     }),
     prisma.photo.findMany({
       where: { showInSlideshow: true },
-      select: { id: true, filename: true, focalX: true, focalY: true },
+      select: { id: true, imageUrl: true, focalX: true, focalY: true },
       orderBy: { sortOrder: 'asc' },
     }),
     prisma.photo.findMany({
       where: { showInAbout: true },
-      select: { id: true, filename: true, title: true, focalX: true, focalY: true },
+      select: { id: true, imageUrl: true, title: true, focalX: true, focalY: true },
       orderBy: { sortOrder: 'asc' },
     }),
     prisma.category.findMany({ orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] }),

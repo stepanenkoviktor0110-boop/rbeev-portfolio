@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
-import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { resolvePhotoUrl } from '@/lib/photoUrl';
 
-type Item = { id: number; title: string; filename: string };
+type Item = { id: number; title: string; imageUrl: string };
 
 interface Props {
   items: Item[];
@@ -139,13 +139,11 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
           onClose();
         }}
       >
-        <Image
-          src={`https://res.cloudinary.com/dt70epmum/image/upload/f_auto,q_auto/${item.filename}`}
+        <img
+          src={resolvePhotoUrl(item.imageUrl)}
           alt={item.title}
-          width={1200}
-          height={900}
           className="max-h-[90vh] w-auto rounded-none object-contain"
-          onLoadingComplete={() => {
+          onLoad={() => {
             const rect = imageWrapRef.current?.getBoundingClientRect();
             if (!rect) return;
             const offset = 20;
