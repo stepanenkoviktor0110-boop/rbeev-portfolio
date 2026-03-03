@@ -25,21 +25,26 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const csrf = requireSameOrigin(request);
-  if (csrf) return csrf;
+  try {
+    const csrf = requireSameOrigin(request);
+    if (csrf) return csrf;
 
-  const ip = getClientIp(request);
-  const rate = checkRateLimit({ key: `auth:login:${ip}`, limit: 10, windowMs: 15 * 60 * 1000 });
-  if (!rate.ok) return rateLimitJsonResponse('Слишком много попыток входа', rate.retryAfterSec);
+    const ip = getClientIp(request);
+    const rate = checkRateLimit({ key: `auth:login:${ip}`, limit: 10, windowMs: 15 * 60 * 1000 });
+    if (!rate.ok) return rateLimitJsonResponse('Слишком много попыток входа', rate.retryAfterSec);
 
-  const parsed = loginSchema.safeParse(await parseJsonSafe(request));
-  if (!parsed.success) return NextResponse.json({ error: 'Некорректный запрос' }, { status: 400 });
+    const parsed = loginSchema.safeParse(await parseJsonSafe(request));
+    if (!parsed.success) return NextResponse.json({ error: 'Некорректный запрос' }, { status: 400 });
 
-  const valid = await verifyAdminPassword(parsed.data.password);
-  if (!valid) return NextResponse.json({ error: 'Неверный пароль' }, { status: 401 });
+    const valid = await verifyAdminPassword(parsed.data.password);
+    if (!valid) return NextResponse.json({ error: 'Неверный пароль' }, { status: 401 });
 
-  await setSession();
-  return NextResponse.json({ ok: true });
+    await setSession();
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('POST /api/auth error:', error);
+    return NextResponse.json({ error: 'Ошибка сервера при входе' }, { status: 500 });
+  }
 }
 
 export async function PUT(request: Request) {

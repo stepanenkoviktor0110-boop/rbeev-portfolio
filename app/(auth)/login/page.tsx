@@ -10,13 +10,25 @@ export default function LoginPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     });
-    if (res.ok) router.push('/admin/gallery');
-    else setError('Неверный пароль');
+    if (res.ok) {
+      router.push('/admin/gallery');
+      return;
+    }
+
+    let message = `Ошибка входа (${res.status})`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (body?.error) message = body.error;
+    } catch {
+      // ignore parse errors and keep fallback message
+    }
+    setError(message);
   };
 
   return (
