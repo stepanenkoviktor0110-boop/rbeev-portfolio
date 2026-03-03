@@ -20,19 +20,19 @@ type SettingsForm = {
 const topFields: Array<{ key: keyof SettingsForm; label: string; placeholder: string }> = [
   {
     key: 'heroTitle',
-    label: 'Р“Р»Р°РІРЅС‹Р№ Р·Р°РіРѕР»РѕРІРѕРє',
-    placeholder: 'РќР°РїСЂРёРјРµСЂ: РџСЂРѕС„РµСЃСЃРёРѕРЅР°Р»СЊРЅС‹Р№ С„РѕС‚РѕРіСЂР°С„',
+    label: 'Главный заголовок',
+    placeholder: 'Например: Профессиональный фотограф',
   },
   {
     key: 'heroSubtitle',
-    label: 'РћРїРёСЃР°РЅРёРµ РїРѕРґ Р·Р°РіРѕР»РѕРІРєРѕРј',
-    placeholder: 'РљРѕСЂРѕС‚РєРёР№ С‚РµРєСЃС‚ РїРѕРґ РіР»Р°РІРЅС‹Рј Р·Р°РіРѕР»РѕРІРєРѕРј',
+    label: 'Описание под заголовком',
+    placeholder: 'Короткий текст под главным заголовком',
   },
   { key: 'email', label: 'Email', placeholder: 'example@mail.com' },
-  { key: 'phone', label: 'РўРµР»РµС„РѕРЅ', placeholder: '+7 ...' },
-  { key: 'telegram', label: 'Telegram', placeholder: '@username РёР»Рё СЃСЃС‹Р»РєР°' },
+  { key: 'phone', label: 'Телефон', placeholder: '+7 ...' },
+  { key: 'telegram', label: 'Telegram', placeholder: '@username или ссылка' },
   { key: 'whatsapp', label: 'WhatsApp', placeholder: '+7 ...' },
-  { key: 'instagram', label: 'Instagram', placeholder: '@username РёР»Рё СЃСЃС‹Р»РєР°' },
+  { key: 'instagram', label: 'Instagram', placeholder: '@username или ссылка' },
 ];
 
 export default function SettingsPage() {
@@ -63,7 +63,7 @@ export default function SettingsPage() {
     });
 
     if (!res.ok) {
-      let message = 'РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ';
+      let message = 'Ошибка сохранения';
       try {
         const body = await res.json();
         message = body?.error || message;
@@ -75,7 +75,7 @@ export default function SettingsPage() {
       return;
     }
 
-    alert('РЎРѕС…СЂР°РЅРµРЅРѕ');
+    alert('Сохранено');
   };
 
   const changePassword = async (e: React.FormEvent) => {
@@ -88,17 +88,17 @@ export default function SettingsPage() {
     });
 
     if (!res.ok) {
-      alert('РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ РїР°СЂРѕР»СЏ');
+      alert('Ошибка обновления пароля');
       return;
     }
 
     setPassword('');
-    alert('РџР°СЂРѕР»СЊ РѕР±РЅРѕРІР»С‘РЅ РІ С‚РµРєСѓС‰РµР№ СЃРµСЃСЃРёРё');
+    alert('Пароль обновлён в текущей сессии');
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="font-serif text-4xl text-accent">РќР°СЃС‚СЂРѕР№РєРё</h1>
+      <h1 className="font-serif text-4xl text-accent">Настройки</h1>
 
       <form onSubmit={save} className="card space-y-8 p-6">
         <div className="grid gap-4 md:grid-cols-2">
@@ -117,66 +117,66 @@ export default function SettingsPage() {
 
         <div className="space-y-2">
           <label htmlFor="aboutText" className="block text-sm text-white/70">
-            РћРїРёСЃР°РЅРёРµ РІ Р±Р»РѕРєРµ В«РћР±Рѕ РјРЅРµВ»
+            Описание в блоке «Обо мне»
           </label>
           <textarea
             id="aboutText"
             value={String(data.aboutText ?? '')}
             onChange={(e) => setField('aboutText', e.target.value)}
-            placeholder="Р‘РѕР»СЊС€РѕР№ С‚РµРєСЃС‚ Рѕ РІР°СЃ, СЃС‚РёР»Рµ СЃСЉС‘РјРєРё, РїРѕРґС…РѕРґРµ Рє СЂР°Р±РѕС‚Рµ, РѕРїС‹С‚Рµ..."
+            placeholder="Большой текст о вас, стиле съёмки, подходе к работе, опыте..."
             className="min-h-[220px] w-full rounded-none bg-white/10 px-3 py-3 leading-relaxed"
           />
           <p className="text-xs text-white/50">
-            Р¤РѕС‚Рѕ РґР»СЏ РіР»Р°РІРЅРѕРіРѕ СЃР»Р°Р№РґС€РѕСѓ Рё Р±Р»РѕРєР° В«РћР±Рѕ РјРЅРµВ» СѓРїСЂР°РІР»СЏСЋС‚СЃСЏ С‡РµРєР±РѕРєСЃР°РјРё РІ СЂР°Р·РґРµР»Рµ В«Р“Р°Р»РµСЂРµСЏВ».
+            Фото для главного слайдшоу и блока «Обо мне» управляются чекбоксами в разделе «Галерея».
           </p>
         </div>
 
         <div className="space-y-2">
           <label htmlFor="personalDataConsentText" className="block text-sm text-white/70">
-            РўРµРєСЃС‚ СЃРѕРіР»Р°СЃРёСЏ РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹С… РґР°РЅРЅС‹С…
+            Текст согласия на обработку персональных данных
           </label>
           <textarea
             id="personalDataConsentText"
             value={String(data.personalDataConsentText ?? '')}
             onChange={(e) => setField('personalDataConsentText', e.target.value)}
-            placeholder="Р­С‚РѕС‚ С‚РµРєСЃС‚ РѕС‚РєСЂРѕРµС‚СЃСЏ РїРѕ СЃСЃС‹Р»РєРµ В«СЃРѕРіР»Р°СЃРёРµВ» РІ С„РѕСЂРјРµ Р·Р°СЏРІРєРё."
+            placeholder="Этот текст откроется по ссылке «согласие» в форме заявки."
             className="min-h-[220px] w-full rounded-none bg-white/10 px-3 py-3 leading-relaxed"
           />
           <p className="text-xs text-white/50">
-            Р•СЃР»Рё РїРѕР»Рµ РїСѓСЃС‚РѕРµ, РЅР° СЃР°Р№С‚Рµ Р±СѓРґРµС‚ РїРѕРєР°Р·Р°РЅ Р±Р°Р·РѕРІС‹Р№ С‚РµРєСЃС‚-Р·Р°РіР»СѓС€РєР°.
+            Если поле пустое, на сайте будет показан базовый текст-заглушка.
           </p>
         </div>
 
         <div className="space-y-2">
           <label htmlFor="personalDataPolicyText" className="block text-sm text-white/70">
-            РўРµРєСЃС‚ РџРѕР»РёС‚РёРєРё РѕР±СЂР°Р±РѕС‚РєРё РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹С… РґР°РЅРЅС‹С…
+            Текст Политики обработки персональных данных
           </label>
           <textarea
             id="personalDataPolicyText"
             value={String(data.personalDataPolicyText ?? '')}
             onChange={(e) => setField('personalDataPolicyText', e.target.value)}
-            placeholder="Р­С‚РѕС‚ С‚РµРєСЃС‚ РѕС‚РєСЂРѕРµС‚СЃСЏ РїРѕ СЃСЃС‹Р»РєРµ В«РџРѕР»РёС‚РёРєРѕР№В» РІ С„РѕСЂРјРµ Р·Р°СЏРІРєРё."
+            placeholder="Этот текст откроется по ссылке «Политикой» в форме заявки."
             className="min-h-[220px] w-full rounded-none bg-white/10 px-3 py-3 leading-relaxed"
           />
           <p className="text-xs text-white/50">
-            Р•СЃР»Рё РїРѕР»Рµ РїСѓСЃС‚РѕРµ, РЅР° СЃР°Р№С‚Рµ Р±СѓРґРµС‚ РїРѕРєР°Р·Р°РЅ Р±Р°Р·РѕРІС‹Р№ С‚РµРєСЃС‚-Р·Р°РіР»СѓС€РєР° РїРѕР»РёС‚РёРєРё.
+            Если поле пустое, на сайте будет показан базовый текст-заглушка политики.
           </p>
         </div>
 
-        <button className="rounded-none bg-accent px-4 py-2 text-black">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button className="rounded-none bg-accent px-4 py-2 text-black">Сохранить</button>
       </form>
 
       <form onSubmit={changePassword} className="card max-w-md space-y-3 p-6">
-        <h2 className="font-serif text-2xl">РЎРјРµРЅР° РїР°СЂРѕР»СЏ (С‚РµРєСѓС‰Р°СЏ СЃРµСЃСЃРёСЏ)</h2>
+        <h2 className="font-serif text-2xl">Смена пароля (текущая сессия)</h2>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           className="w-full rounded-none bg-white/10 px-3 py-2"
-          placeholder="РќРѕРІС‹Р№ РїР°СЂРѕР»СЊ"
+          placeholder="Новый пароль"
         />
-        <button className="rounded-none bg-accent px-4 py-2 text-black">РћР±РЅРѕРІРёС‚СЊ</button>
+        <button className="rounded-none bg-accent px-4 py-2 text-black">Обновить</button>
       </form>
     </div>
   );

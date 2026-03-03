@@ -50,11 +50,11 @@ export default function CookieConsentBanner() {
       <div className="mx-auto max-w-4xl rounded-none border border-white/15 bg-black/85 p-4 shadow-2xl backdrop-blur">
         <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-accent">РњС‹ РёСЃРїРѕР»СЊР·СѓРµРј cookies</p>
+            <p className="text-sm font-semibold text-accent">Мы используем cookies</p>
             <p className="text-sm text-white/80">
-              РЎР°Р№С‚ РёСЃРїРѕР»СЊР·СѓРµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ cookies РґР»СЏ СЂР°Р±РѕС‚С‹ Рё РјРѕР¶РµС‚ СЃРѕС…СЂР°РЅСЏС‚СЊ cookies РїСЂРµРґРїРѕС‡С‚РµРЅРёР№
-              (РЅР°РїСЂРёРјРµСЂ, РЅР°СЃС‚СЂРѕР№РєРё РїСЂРѕСЃРјРѕС‚СЂР° РіР°Р»РµСЂРµРё). Р’С‹ РјРѕР¶РµС‚Рµ РїСЂРёРЅСЏС‚СЊ РІСЃРµ cookies, РѕСЃС‚Р°РІРёС‚СЊ С‚РѕР»СЊРєРѕ
-              РЅРµРѕР±С…РѕРґРёРјС‹Рµ РёР»Рё РЅР°СЃС‚СЂРѕРёС‚СЊ РєР°С‚РµРіРѕСЂРёРё.
+              Сайт использует необходимые cookies для работы и может сохранять cookies предпочтений
+              (например, настройки просмотра галереи). Вы можете принять все cookies, оставить только
+              необходимые или настроить категории.
             </p>
 
             {showCustomize && (
@@ -63,8 +63,8 @@ export default function CookieConsentBanner() {
                   <label className="flex items-start gap-3">
                     <input type="checkbox" checked disabled className="mt-0.5" />
                     <span>
-                      <span className="block font-medium text-white">РќРµРѕР±С…РѕРґРёРјС‹Рµ cookies</span>
-                      <span className="text-white/60">РќСѓР¶РЅС‹ РґР»СЏ Р±Р°Р·РѕРІРѕР№ СЂР°Р±РѕС‚С‹ СЃР°Р№С‚Р° Рё Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё.</span>
+                      <span className="block font-medium text-white">Необходимые cookies</span>
+                      <span className="text-white/60">Нужны для базовой работы сайта и безопасности.</span>
                     </span>
                   </label>
                   <label className="flex items-start gap-3">
@@ -75,9 +75,9 @@ export default function CookieConsentBanner() {
                       className="mt-0.5"
                     />
                     <span>
-                      <span className="block font-medium text-white">РџСЂРµРґРїРѕС‡С‚РµРЅРёСЏ</span>
+                      <span className="block font-medium text-white">Предпочтения</span>
                       <span className="text-white/60">
-                        РЎРѕС…СЂР°РЅРµРЅРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёС… РЅР°СЃС‚СЂРѕРµРє (РЅР°РїСЂРёРјРµСЂ, С„РёР»СЊС‚СЂ/СЃС‚СЂР°РЅРёС†Р° РіР°Р»РµСЂРµРё).
+                        Сохранение пользовательских настроек (например, фильтр/страница галереи).
                       </span>
                     </span>
                   </label>
@@ -89,9 +89,9 @@ export default function CookieConsentBanner() {
                       className="mt-0.5"
                     />
                     <span>
-                      <span className="block font-medium text-white">РђРЅР°Р»РёС‚РёРєР°</span>
+                      <span className="block font-medium text-white">Аналитика</span>
                       <span className="text-white/60">
-                        РЎР±РѕСЂ СЃС‚Р°С‚РёСЃС‚РёРєРё РїРѕСЃРµС‰РµРЅРёР№. РЎРµР№С‡Р°СЃ РёРЅС‚РµРіСЂР°С†РёРё Р°РЅР°Р»РёС‚РёРєРё РЅРµ РїРѕРґРєР»СЋС‡РµРЅС‹.
+                        Сбор статистики посещений. Сейчас интеграции аналитики не подключены.
                       </span>
                     </span>
                   </label>
@@ -102,14 +102,14 @@ export default function CookieConsentBanner() {
                     onClick={() => save({ preferences, analytics })}
                     className="rounded-none bg-accent px-4 py-2 text-sm font-medium text-black"
                   >
-                    РЎРѕС…СЂР°РЅРёС‚СЊ РІС‹Р±РѕСЂ
+                    Сохранить выбор
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCustomize(false)}
                     className="rounded-none bg-white/10 px-4 py-2 text-sm"
                   >
-                    РќР°Р·Р°Рґ
+                    Назад
                   </button>
                 </div>
               </div>
@@ -124,21 +124,21 @@ export default function CookieConsentBanner() {
                   onClick={() => save({ preferences: true, analytics: true })}
                   className="rounded-none bg-accent px-4 py-2 text-sm font-medium text-black"
                 >
-                  РџСЂРёРЅСЏС‚СЊ РІСЃРµ
+                  Принять все
                 </button>
                 <button
                   type="button"
                   onClick={() => save({ preferences: false, analytics: false })}
                   className="rounded-none bg-white/10 px-4 py-2 text-sm"
                 >
-                  РўРѕР»СЊРєРѕ РЅРµРѕР±С…РѕРґРёРјС‹Рµ
+                  Только необходимые
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCustomize(true)}
                   className="rounded-none border border-white/20 px-4 py-2 text-sm"
                 >
-                  РќР°СЃС‚СЂРѕРёС‚СЊ
+                  Настроить
                 </button>
               </>
             )}

@@ -16,15 +16,15 @@ export default function LoginPage() {
       body: JSON.stringify({ password }),
     });
     if (res.ok) router.push('/admin/gallery');
-    else setError('РќРµРІРµСЂРЅС‹Р№ РїР°СЂРѕР»СЊ');
+    else setError('Неверный пароль');
   };
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
       <form onSubmit={submit} className="card w-full max-w-sm space-y-4 p-6">
-        <h1 className="font-serif text-3xl text-accent">Р’С…РѕРґ РІ Р°РґРјРёРЅРєСѓ</h1>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-none bg-white/10 px-3 py-2" placeholder="РџР°СЂРѕР»СЊ" required />
-        <button className="w-full rounded-none bg-accent px-4 py-2 font-medium text-black">Р’РѕР№С‚Рё</button>
+        <h1 className="font-serif text-3xl text-accent">Вход в админку</h1>
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-none bg-white/10 px-3 py-2" placeholder="Пароль" required />
+        <button className="w-full rounded-none bg-accent px-4 py-2 font-medium text-black">Войти</button>
         {error && <p className="text-sm text-red-300">{error}</p>}
       </form>
     </main>
