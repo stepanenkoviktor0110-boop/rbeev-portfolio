@@ -148,14 +148,6 @@ async function publishResource(path: string): Promise<void> {
   }
 }
 
-async function getResource(path: string) {
-  const fields = ['public_url', 'file', 'name', 'path'].join(',');
-  const url = `${YANDEX_API_BASE}/resources?path=${encodeURIComponent(path)}&fields=${encodeURIComponent(fields)}`;
-  return requestJson<{ public_url?: string; file?: string; name?: string; path?: string }>(url, {
-    headers: authHeaders(),
-  });
-}
-
 function buildStorageKey(originalName: string, mimeType?: string) {
   const safeBase = sanitizeFileName(originalName);
   const ext = inferExtension(originalName, mimeType);

@@ -2,7 +2,6 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { displayCategoryName } from '@/lib/categoryLabel';
-import { resolvePhotoUrl } from '@/lib/photoUrl';
 
 type Category = { id: number; name: string };
 type Photo = {
@@ -46,7 +45,7 @@ const PhotoCard = memo(
       <div className="card overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={resolvePhotoUrl(photo.imageUrl)}
+          src={photo.imageUrl}
           alt={photo.title}
           className="h-48 w-full object-cover"
           style={{ objectPosition: `${photo.focalX}% ${photo.focalY}%` }}
@@ -793,7 +792,7 @@ export default function AdminGalleryPage() {
             <div className="relative flex items-start justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={resolvePhotoUrl(editing.imageUrl)}
+                src={editing.imageUrl}
                 alt={editing.title}
                 className="max-h-[80vh] w-auto max-w-full cursor-crosshair rounded-none"
                 onClick={handleFocalClick}
@@ -816,7 +815,7 @@ export default function AdminGalleryPage() {
             <div className="w-full overflow-hidden rounded-none" style={{ height: '200px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={resolvePhotoUrl(editing.imageUrl)}
+                src={editing.imageUrl}
                 alt=""
                 className="h-full w-full object-cover"
                 style={{ objectPosition: `${tempFocal.x}% ${tempFocal.y}%` }}

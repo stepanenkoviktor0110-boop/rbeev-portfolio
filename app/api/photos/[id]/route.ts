@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseId, parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { deleteYandexDiskResource } from '@/lib/storage/yandexDisk';
 import { Prisma } from '@prisma/client';
@@ -20,19 +21,6 @@ const photoUpdateSchema = z
     showInAbout: z.boolean().optional(),
   })
   .strict();
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
-
-function parseId(value: unknown) {
-  const id = Number(value);
-  return Number.isInteger(id) && id > 0 ? id : null;
-}
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   try {

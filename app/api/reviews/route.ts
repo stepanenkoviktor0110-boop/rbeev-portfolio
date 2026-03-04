@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -11,14 +12,6 @@ const createReviewSchema = z
     isPublished: z.boolean().optional(),
   })
   .strict();
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
 
 function checkReviewsRateLimit(request: Request) {
   const ip = getClientIp(request);

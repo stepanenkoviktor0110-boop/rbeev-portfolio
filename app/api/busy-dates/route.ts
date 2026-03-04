@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
@@ -11,14 +12,6 @@ const createBusyDateSchema = z
     requestId: z.number().int().positive(),
   })
   .strict();
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
 
 function checkBusyDatesRateLimit(request: Request) {
   const ip = getClientIp(request);

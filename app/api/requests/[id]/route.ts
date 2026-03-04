@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
@@ -14,14 +15,6 @@ const requestUpdateSchema = z
     isRead: z.boolean().optional(),
   })
   .strict();
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin();

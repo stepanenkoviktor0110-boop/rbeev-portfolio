@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { resolvePhotoUrl } from '@/lib/photoUrl';
 
 type AboutPhoto = {
   id: number;
@@ -64,7 +63,7 @@ export default function About({ text, photos = [] }: { text: string; photos?: Ab
             {currentPhoto && (
               <Image
                 key={currentPhoto.id}
-                src={resolvePhotoUrl(currentPhoto.imageUrl)}
+                src={currentPhoto.imageUrl}
                 alt={currentPhoto.title}
                 fill
                 sizes="(max-width: 768px) 100vw, 40vw"

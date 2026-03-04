@@ -1,5 +1,6 @@
 import { clearSession, isAuthorized, setSession } from '@/lib/auth';
 import { setAdminPassword, verifyAdminPassword } from '@/lib/adminPassword';
+import { parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -11,14 +12,6 @@ const loginSchema = z.object({
 const changePasswordSchema = z.object({
   password: z.string().min(8).max(128),
 });
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
 
 export async function GET() {
   return NextResponse.json({ ok: await isAuthorized() });

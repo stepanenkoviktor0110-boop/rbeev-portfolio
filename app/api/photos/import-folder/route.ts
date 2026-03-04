@@ -1,19 +1,12 @@
 ﻿import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { importPublicFolderFromYandexDisk } from '@/lib/storage/yandexDisk';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 export const maxDuration = 300;
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
 
 function isValidYandexFolderUrl(value: string) {
   if (!value) return false;

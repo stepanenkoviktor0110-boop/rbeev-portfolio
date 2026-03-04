@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseJsonIds, parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -43,24 +44,6 @@ const settingsUpdateSchema = z
     aboutPhotoIds: z.string().max(5000).optional(),
   })
   .strict();
-
-function parseJsonIds(value: unknown): number[] {
-  try {
-    const parsed = JSON.parse(String(value ?? '[]'));
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map(Number).filter(Number.isFinite);
-  } catch {
-    return [];
-  }
-}
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
 
 export async function GET() {
   const settings = await prisma.settings.upsert({

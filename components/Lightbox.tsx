@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { resolvePhotoUrl } from '@/lib/photoUrl';
 
 type Item = { id: number; title: string; imageUrl: string };
 
@@ -140,7 +139,7 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
         }}
       >
         <img
-          src={resolvePhotoUrl(item.imageUrl)}
+          src={item.imageUrl}
           alt={item.title}
           className="max-h-[90vh] w-auto rounded-none object-contain"
           onLoad={() => {

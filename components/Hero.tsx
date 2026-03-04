@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { resolvePhotoUrl } from '@/lib/photoUrl';
 
 interface HeroPhoto {
   id: number;
@@ -46,7 +45,7 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
           style={{ opacity: 1 }}
         >
           <Image
-            src={resolvePhotoUrl(currentPhoto.imageUrl)}
+            src={currentPhoto.imageUrl}
             alt=""
             fill
             priority={currentIndex === 0}

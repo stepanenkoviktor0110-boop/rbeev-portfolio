@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseId, parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
@@ -13,19 +14,6 @@ const reviewUpdateSchema = z
     sortOrder: z.number().int().min(0).max(1_000_000).optional(),
   })
   .strict();
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
-
-function parseId(value: unknown) {
-  const id = Number(value);
-  return Number.isInteger(id) && id > 0 ? id : null;
-}
 
 function checkReviewsRateLimit(request: Request) {
   const ip = getClientIp(request);

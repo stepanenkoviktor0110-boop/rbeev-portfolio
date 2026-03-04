@@ -1,16 +1,11 @@
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseIntParam } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { uploadImageToYandexDisk } from '@/lib/storage/yandexDisk';
 import { NextResponse } from 'next/server';
 
 export const maxDuration = 60;
-
-function parseIntParam(value: string | null, fallback: number, min = 1, max = 200) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(max, Math.max(min, Math.trunc(parsed)));
-}
 
 export async function GET(request: Request) {
   const auth = await requireAdmin();

@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { displayCategoryName } from '@/lib/categoryLabel';
 import { COOKIE_CONSENT_EVENT, loadSitePrefs, saveSitePrefs } from '@/lib/cookieConsent';
-import { resolvePhotoUrl } from '@/lib/photoUrl';
 import Lightbox from './Lightbox';
 
 type P = Photo & { category: Category };
@@ -125,7 +124,7 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
             >
               <div className={`relative w-full overflow-hidden ${aspectClass}`}>
                 <Image
-                  src={resolvePhotoUrl(photo.imageUrl)}
+                  src={photo.imageUrl}
                   alt={photo.title}
                   fill
                   unoptimized

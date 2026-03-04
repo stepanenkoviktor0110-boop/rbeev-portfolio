@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
+import { parseIntParam, parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
@@ -37,19 +38,6 @@ function getValidationErrorMessage(error: z.ZodError) {
   }
 }
 
-function parseIntParam(value: string | null, fallback: number, min = 1, max = 200) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(max, Math.max(min, Math.trunc(parsed)));
-}
-
-async function parseJsonSafe(request: Request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
 
 export async function GET(request: Request) {
   const auth = await requireAdmin();
