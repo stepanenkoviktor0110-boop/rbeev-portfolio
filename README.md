@@ -115,6 +115,7 @@ npm run dev
 ## Документация
 
 Подробное техническое описание: [PROJECT_DOCS.md](PROJECT_DOCS.md).
+Руководство по использованию админки: [ADMIN_GUIDE.md](ADMIN_GUIDE.md).
 
 ## Сброс пароля админки
 
