@@ -15,7 +15,6 @@ interface HeroProps {
 export default function Hero({ settings, heroPhotos }: HeroProps) {
   const [slides, setSlides] = useState<HeroPhoto[]>(heroPhotos);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageReady, setImageReady] = useState(false);
 
   const currentPhoto = slides[currentIndex] ?? null;
   const subtitleRaw = settings.heroSubtitle?.trim() || '';
@@ -64,36 +63,34 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
     setCurrentIndex((prev) => (slides.length === 0 ? 0 : Math.min(prev, slides.length - 1)));
   }, [slides.length]);
 
-  useEffect(() => {
-    setImageReady(false);
-  }, [currentPhoto?.id]);
-
   const title = useMemo(() => settings.heroTitle || 'Фотография вашей истории', [settings.heroTitle]);
 
   return (
     <section className="relative flex h-screen w-full items-center justify-center overflow-hidden text-center">
       <div className="absolute inset-0 bg-[#111]" />
-      {currentPhoto && (
+      {slides.map((slide, index) => (
         <div
-          key={currentPhoto.id}
-          className="absolute inset-0 transition-opacity duration-1000"
-          style={{ opacity: 1 }}
+          key={slide.id}
+          className="absolute inset-0 transition-opacity duration-[1600ms] ease-in-out"
+          style={{ opacity: index === currentIndex ? 1 : 0 }}
         >
           <Image
-            src={currentPhoto.imageUrl}
+            src={slide.imageUrl}
             alt=""
             fill
-            priority={currentIndex === 0}
+            priority={index === 0}
             sizes="100vw"
             quality={70}
-            className="object-cover transition-opacity duration-500"
+            className="object-cover"
             style={{
               transform: 'scale(1.04)',
-              objectPosition: `${currentPhoto.focalX}% ${currentPhoto.focalY}%`,
-              opacity: imageReady ? 1 : 0,
+              objectPosition: `${slide.focalX}% ${slide.focalY}%`,
             }}
-            onLoadingComplete={() => setImageReady(true)}
           />
+        </div>
+      ))}
+      {currentPhoto && (
+        <>
           <div className="absolute inset-0 bg-black/55" />
           <div
             className="absolute inset-0"
@@ -102,7 +99,7 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
                 'linear-gradient(180deg, rgba(6,6,6,0.3) 0%, rgba(6,6,6,0.16) 35%, rgba(6,6,6,0.58) 100%), radial-gradient(ellipse 85% 85% at 50% 50%, transparent 52%, rgba(0,0,0,0.62) 80%, rgba(0,0,0,0.94) 100%)',
             }}
           />
-        </div>
+        </>
       )}
 
       <div className="z-10 px-4">
