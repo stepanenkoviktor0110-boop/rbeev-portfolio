@@ -105,8 +105,24 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+async function ensureDirectory(path: string): Promise<void> {
+  const url = `${YANDEX_API_BASE}/resources?path=${encodeURIComponent(path)}`;
+  const res = await fetch(url, { method: 'PUT', headers: authHeaders() });
+  // 201 = created, 409 = already exists — both are fine
+  if (!res.ok && res.status !== 409) {
+    let detail = `status ${res.status}`;
+    try {
+      const body = (await res.json()) as { description?: string; message?: string };
+      detail = body.description || body.message || detail;
+    } catch { /* ignore */ }
+    throw new Error(`Не удалось создать папку ${path}: ${detail}`);
+  }
+  console.log(`[YDisk] ensureDirectory path=${path} status=${res.status}`);
+}
+
 async function getUploadUrl(path: string) {
   const url = `${YANDEX_API_BASE}/resources/upload?path=${encodeURIComponent(path)}&overwrite=true`;
+  console.log(`[YDisk] getUploadUrl path=${path}`);
   const payload = await requestJson<{ href: string }>(url, { headers: authHeaders() });
   if (!payload.href) throw new Error('Yandex Disk did not return upload URL');
   return payload.href;
@@ -122,29 +138,14 @@ async function uploadBinary(uploadUrl: string, buffer: Buffer, contentType: stri
   if (!res.ok) throw new Error(`Upload failed with status ${res.status}`);
 }
 
-async function publishResource(path: string): Promise<string> {
+async function publishResource(path: string): Promise<void> {
   const url = `${YANDEX_API_BASE}/resources/publish?path=${encodeURIComponent(path)}`;
   const res = await fetch(url, { method: 'PUT', headers: authHeaders() });
   console.log(`[YDisk] publish status=${res.status} path=${path}`);
+  // 409 = already published — fine
   if (!res.ok && res.status !== 409) {
     throw new Error(`Could not publish resource, status ${res.status}`);
   }
-  // Yandex returns href with the actual internal resource path — use it for getResource
-  if (res.ok) {
-    try {
-      const body = (await res.json()) as { href?: string };
-      console.log(`[YDisk] publish body=${JSON.stringify(body)}`);
-      if (body.href) {
-        const hrefUrl = new URL(body.href);
-        const actualPath = hrefUrl.searchParams.get('path');
-        console.log(`[YDisk] actualPath=${actualPath}`);
-        if (actualPath) return actualPath;
-      }
-    } catch (e) {
-      console.log(`[YDisk] publish body parse error: ${e}`);
-    }
-  }
-  return path;
 }
 
 async function getResource(path: string) {
@@ -168,12 +169,15 @@ async function uploadBufferToDisk(buffer: Buffer, originalName: string, mimeType
   if (buffer.length > MAX_FILE_SIZE_BYTES) throw new Error('Файл больше 10MB');
   if (!isAllowedImageBuffer(buffer)) throw new Error('Неверный формат файла');
 
+  await ensureDirectory(getDiskBaseDir());
+
   const storageKey = buildStorageKey(originalName, mimeType);
   const uploadUrl = await getUploadUrl(storageKey);
   await uploadBinary(uploadUrl, buffer, mimeType || 'application/octet-stream');
-  const actualPath = await publishResource(storageKey);
+  await publishResource(storageKey);
 
-  const resource = await getResource(actualPath);
+  console.log(`[YDisk] getResource path=${storageKey}`);
+  const resource = await getResource(storageKey);
   const imageUrl = resource.file || resource.public_url;
   if (!imageUrl) throw new Error('Не удалось получить публичную ссылку на файл');
 
