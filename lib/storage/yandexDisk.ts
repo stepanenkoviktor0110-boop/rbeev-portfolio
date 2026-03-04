@@ -125,6 +125,7 @@ async function uploadBinary(uploadUrl: string, buffer: Buffer, contentType: stri
 async function publishResource(path: string): Promise<string> {
   const url = `${YANDEX_API_BASE}/resources/publish?path=${encodeURIComponent(path)}`;
   const res = await fetch(url, { method: 'PUT', headers: authHeaders() });
+  console.log(`[YDisk] publish status=${res.status} path=${path}`);
   if (!res.ok && res.status !== 409) {
     throw new Error(`Could not publish resource, status ${res.status}`);
   }
@@ -132,13 +133,15 @@ async function publishResource(path: string): Promise<string> {
   if (res.ok) {
     try {
       const body = (await res.json()) as { href?: string };
+      console.log(`[YDisk] publish body=${JSON.stringify(body)}`);
       if (body.href) {
         const hrefUrl = new URL(body.href);
         const actualPath = hrefUrl.searchParams.get('path');
+        console.log(`[YDisk] actualPath=${actualPath}`);
         if (actualPath) return actualPath;
       }
-    } catch {
-      // fall through to original path
+    } catch (e) {
+      console.log(`[YDisk] publish body parse error: ${e}`);
     }
   }
   return path;
