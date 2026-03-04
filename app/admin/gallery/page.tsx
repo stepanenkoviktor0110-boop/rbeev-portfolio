@@ -148,6 +148,7 @@ export default function AdminGalleryPage() {
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [repairingUrls, setRepairingUrls] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const loadCategories = useCallback(async () => {
@@ -457,6 +458,25 @@ export default function AdminGalleryPage() {
     }
   };
 
+  const repairUrls = async () => {
+    setRepairingUrls(true);
+    try {
+      const res = await fetch('/api/photos/repair-urls', { method: 'POST' });
+      const body = (await res.json()) as { fixed?: number; message?: string; error?: string };
+      if (!res.ok) throw new Error(body.error || 'Ошибка');
+      const msg = body.message || `Исправлено фото: ${body.fixed}`;
+      alert(msg);
+      if ((body.fixed ?? 0) > 0) {
+        setPage(1);
+        await loadPhotos(1);
+      }
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setRepairingUrls(false);
+    }
+  };
+
   const transferStageStatus =
     folderImportPhase === 'prepare'
       ? 'pending'
@@ -689,10 +709,21 @@ export default function AdminGalleryPage() {
       </div>
 
       <div className="card flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
-        <p className="text-white/70">
-          Фото: <span className="text-white">{totalPhotos}</span>
-          {loadingPhotos && <span className="ml-2 text-white/50">Обновление...</span>}
-        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-white/70">
+            Фото: <span className="text-white">{totalPhotos}</span>
+            {loadingPhotos && <span className="ml-2 text-white/50">Обновление...</span>}
+          </p>
+          <button
+            type="button"
+            onClick={repairUrls}
+            disabled={repairingUrls}
+            className="rounded-none border border-white/20 px-3 py-1 text-xs text-white/60 hover:border-white/40 hover:text-white/80 disabled:opacity-40 transition"
+            title="Починить URL фото, загруженных до обновления"
+          >
+            {repairingUrls ? 'Восстановление...' : 'Починить URL фото'}
+          </button>
+        </div>
         <div className="flex items-center gap-2">
           <button
             type="button"

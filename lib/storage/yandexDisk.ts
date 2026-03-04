@@ -176,11 +176,9 @@ async function uploadBufferToDisk(buffer: Buffer, originalName: string, mimeType
   await uploadBinary(uploadUrl, buffer, mimeType || 'application/octet-stream');
   await publishResource(storageKey);
 
-  console.log(`[YDisk] getResource path=${storageKey}`);
-  const resource = await getResource(storageKey);
-  const imageUrl = resource.file || resource.public_url;
-  if (!imageUrl) throw new Error('Не удалось получить публичную ссылку на файл');
-
+  // Store a proxy URL instead of a temporary Yandex signed URL
+  const imageUrl = `/api/photos/image?key=${encodeURIComponent(storageKey)}`;
+  console.log(`[YDisk] stored imageUrl=${imageUrl}`);
   return { imageUrl, storageKey };
 }
 
