@@ -1,12 +1,12 @@
-﻿import { requireAdmin } from '@/lib/guards';
+import { requireAdmin } from '@/lib/guards';
 import { prisma } from '@/lib/prisma';
 import { parseJsonSafe } from '@/lib/apiUtils';
 import { checkRateLimit, getClientIp, rateLimitJsonResponse, requireSameOrigin } from '@/lib/security';
-import { importPublicFolderFromYandexDisk } from '@/lib/storage/yandexDisk';
+import { buildPublicFileKey, readPublicFolder } from '@/lib/storage/yandexDisk';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 function isValidYandexFolderUrl(value: string) {
   if (!value) return false;
@@ -85,27 +85,34 @@ export async function POST(request: Request) {
 
       (async () => {
         try {
-          send({ type: 'progress', phase: 'start', completed: 0, total: 0, message: 'Начинаем импорт папки...' });
+          send({ type: 'progress', phase: 'start', completed: 0, total: 0, message: 'Читаем папку...' });
 
-          const importedFolder = await importPublicFolderFromYandexDisk(publicUrl, {
-            onProgress(progress) {
-              send({ type: 'progress', phase: progress.phase, completed: progress.completed, total: progress.total });
-            },
-          });
+          // Read folder contents without downloading anything
+          const folder = await readPublicFolder(publicUrl);
 
-          const { category, created } = await getOrCreateCategoryByName(importedFolder.folderName);
+          if (folder.files.length === 0) {
+            send({ type: 'error', error: 'В папке не найдено изображений (поддерживаются JPEG, PNG, WebP)' });
+            return;
+          }
+
+          const { category, created } = await getOrCreateCategoryByName(folder.folderName);
           const maxOrder = await prisma.photo.aggregate({ _max: { sortOrder: true } });
           let currentOrder = maxOrder._max.sortOrder ?? 0;
-          const total = importedFolder.imported.length;
+          const total = folder.files.length;
 
-          for (let i = 0; i < importedFolder.imported.length; i += 1) {
-            const item = importedFolder.imported[i];
+          send({ type: 'progress', phase: 'db', completed: 0, total, message: `Найдено ${total} фото, создаём записи...` });
+
+          for (let i = 0; i < folder.files.length; i += 1) {
+            const file = folder.files[i];
+            const storageKey = buildPublicFileKey(folder.publicKey, file.path);
+            const imageUrl = `/api/photos/image?key=${encodeURIComponent(storageKey)}`;
             currentOrder += 1;
+
             await prisma.photo.create({
               data: {
-                title: item.title,
-                imageUrl: item.imageUrl,
-                storageKey: item.storageKey,
+                title: file.title,
+                imageUrl,
+                storageKey,
                 categoryId: category.id,
                 description: null,
                 sortOrder: currentOrder,
@@ -118,8 +125,8 @@ export async function POST(request: Request) {
 
           send({
             type: 'done',
-            importedCount: importedFolder.imported.length,
-            skippedCount: importedFolder.skipped.length,
+            importedCount: folder.files.length,
+            skippedCount: 0,
             category,
             categoryCreated: created,
           });

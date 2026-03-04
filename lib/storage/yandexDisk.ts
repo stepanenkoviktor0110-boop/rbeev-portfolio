@@ -14,10 +14,16 @@ type UploadResult = {
   storageKey: string;
 };
 
-type FolderImportProgress = {
-  phase: 'transfer';
-  completed: number;
-  total: number;
+export type FolderMetaFile = {
+  name: string;
+  path: string;
+  title: string;
+};
+
+export type FolderMetaResult = {
+  folderName: string;
+  publicKey: string;
+  files: FolderMetaFile[];
 };
 
 function getDiskToken() {
@@ -181,6 +187,8 @@ export async function uploadImageToYandexDisk(file: File): Promise<UploadResult>
 
 export async function deleteYandexDiskResource(storageKey: string): Promise<void> {
   if (!storageKey) return;
+  // Public folder files are not owned by us — don't delete originals
+  if (storageKey.startsWith('ypub::')) return;
 
   const path = normalizeResourcePath(storageKey);
   const url = `${YANDEX_API_BASE}/resources?path=${encodeURIComponent(path)}&permanently=true`;
@@ -240,65 +248,36 @@ async function listPublicFolderFiles(publicKey: string): Promise<DiskFile[]> {
   return files;
 }
 
-async function getPublicDownloadUrl(publicKey: string, path: string) {
-  const url =
-    `${YANDEX_API_BASE}/public/resources/download?public_key=${encodeURIComponent(publicKey)}` +
-    `&path=${encodeURIComponent(path)}`;
-  const payload = await requestJson<{ href?: string }>(url, { headers: authHeaders() });
-  if (!payload.href) throw new Error('Не удалось получить ссылку на скачивание файла из папки');
-  return payload.href;
-}
-
-async function downloadPublicFile(publicKey: string, path: string) {
-  try {
-    const href = await getPublicDownloadUrl(publicKey, path);
-    const response = await fetch(href);
-    if (!response.ok) throw new Error(`Ошибка скачивания файла из папки (${response.status})`);
-    return Buffer.from(await response.arrayBuffer());
-  } catch (err) {
-    // Fallback: try just the filename without parent path components
-    const filename = `/${path.split('/').filter(Boolean).pop() || ''}`;
-    if (filename === path) throw err; // already tried this exact path, don't retry
-    const href = await getPublicDownloadUrl(publicKey, filename);
-    const response = await fetch(href);
-    if (!response.ok) throw new Error(`Ошибка скачивания файла из папки (${response.status})`);
-    return Buffer.from(await response.arrayBuffer());
-  }
-}
-
 function titleFromName(name: string) {
   return sanitizeFileName(name).replace(/[_-]/g, ' ');
 }
 
-export async function importPublicFolderFromYandexDisk(
-  publicKey: string,
-  options?: { onProgress?: (progress: FolderImportProgress) => void }
-) {
+/**
+ * Build a storage key for a file in a public Yandex Disk folder.
+ * Format: ypub::{publicKey}::{filePath}
+ */
+export function buildPublicFileKey(publicKey: string, filePath: string): string {
+  return `ypub::${publicKey}::${filePath}`;
+}
+
+/**
+ * Read the contents of a public Yandex Disk folder without downloading anything.
+ * Returns folder name and list of image files with their paths.
+ */
+export async function readPublicFolder(publicKey: string): Promise<FolderMetaResult> {
   const meta = await getPublicFolderMeta(publicKey);
   if (meta.type !== 'dir') throw new Error('Ссылка должна вести на папку Яндекс.Диска');
 
   const folderName = (meta.name || '').trim() || `folder-${Date.now()}`;
   const files = await listPublicFolderFiles(publicKey);
-  if (files.length === 0) throw new Error('В папке не найдено изображений');
-
-  const imported: Array<UploadResult & { title: string }> = [];
-  const skipped: string[] = [];
-  const total = files.length;
-  for (let index = 0; index < files.length; index += 1) {
-    const file = files[index];
-    try {
-      const binary = await downloadPublicFile(publicKey, file.path);
-      const uploaded = await uploadBufferToDisk(binary, file.name, file.mime_type);
-      imported.push({ ...uploaded, title: titleFromName(file.name) });
-    } catch {
-      skipped.push(file.name);
-    }
-    options?.onProgress?.({ phase: 'transfer', completed: index + 1, total });
-  }
 
   return {
     folderName,
-    imported,
-    skipped,
+    publicKey,
+    files: files.map(f => ({
+      name: f.name,
+      path: f.path,
+      title: titleFromName(f.name),
+    })),
   };
 }
