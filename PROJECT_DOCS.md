@@ -71,6 +71,10 @@
 app/
   page.tsx                        — публичная главная
   layout.tsx
+  icon.svg                        — base SVG icon (РБ)
+  favicon.ico                     — fallback favicon for browser UI/address bar
+  apple-icon.png                  — icon for Apple devices
+  manifest.ts                     — Web App Manifest (icons + theme metadata)
   admin/
     page.tsx                      — дашборд
     gallery/page.tsx
@@ -118,6 +122,9 @@ lib/
   security.ts           — rate limiting, CSRF
   storage/
     yandexDisk.ts       — весь код работы с Яндекс.Диском
+public/
+  icon-192.png                    — PWA icon 192x192
+  icon-512.png                    — PWA icon 512x512
 ```
 
 ## 4. lib/apiUtils.ts
