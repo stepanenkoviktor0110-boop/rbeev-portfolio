@@ -1,24 +1,42 @@
 'use client';
 
-import type { Category, Photo } from '@prisma/client';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { displayCategoryName } from '@/lib/categoryLabel';
 import { COOKIE_CONSENT_EVENT, loadSitePrefs, saveSitePrefs } from '@/lib/cookieConsent';
 import Lightbox from './Lightbox';
 
-type P = Photo & { category: Category };
+type GalleryCategory = {
+  id: number;
+  name: string;
+  sortOrder: number;
+};
+
+type GalleryPhoto = {
+  id: number;
+  title: string;
+  imageUrl: string;
+  categoryId: number;
+  sortOrder: number;
+  focalX: number;
+  focalY: number;
+};
+
 const INITIAL_VISIBLE = 12;
 
-export default function Gallery({ photos, categories }: { photos: P[]; categories: Category[] }) {
+export default function Gallery({ photos, categories }: { photos: GalleryPhoto[]; categories: GalleryCategory[] }) {
   const [active, setActive] = useState<number | null>(null);
   const [openedIndex, setOpenedIndex] = useState<number | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [prefsReady, setPrefsReady] = useState(false);
+  const photoCategoryIds = useMemo(() => new Set(photos.map((photo) => photo.categoryId)), [photos]);
 
   const sortedCategories = useMemo(
-    () => [...categories].sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id),
-    [categories]
+    () =>
+      [...categories]
+        .filter((category) => photoCategoryIds.has(category.id))
+        .sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id),
+    [categories, photoCategoryIds]
   );
 
   const categoryOrder = useMemo(() => {
@@ -46,7 +64,7 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
     if (prefs) {
       const nextActive =
         typeof prefs.galleryCategoryId === 'number' &&
-        categories.some((c) => c.id === prefs.galleryCategoryId)
+        sortedCategories.some((c) => c.id === prefs.galleryCategoryId)
           ? prefs.galleryCategoryId
           : null;
       setActive(nextActive);
@@ -62,7 +80,7 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
     window.addEventListener(COOKIE_CONSENT_EVENT, onConsentUpdated);
     return () => window.removeEventListener(COOKIE_CONSENT_EVENT, onConsentUpdated);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories]);
+  }, [sortedCategories]);
 
   useEffect(() => {
     setShowAll(false);
@@ -127,8 +145,8 @@ export default function Gallery({ photos, categories }: { photos: P[]; categorie
                   src={photo.imageUrl}
                   alt={photo.title}
                   fill
-                  unoptimized
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                  quality={72}
                   className="object-cover transition duration-500 group-hover:scale-[1.03]"
                   style={{ objectPosition: `${photo.focalX}% ${photo.focalY}%` }}
                 />

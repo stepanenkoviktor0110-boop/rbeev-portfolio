@@ -1,14 +1,8 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-
-interface HeroPhoto {
-  id: number;
-  imageUrl: string;
-  focalX: number;
-  focalY: number;
-}
+import type { HeroPhoto } from '@/lib/types';
 
 interface HeroProps {
   settings: {
@@ -19,25 +13,66 @@ interface HeroProps {
 }
 
 export default function Hero({ settings, heroPhotos }: HeroProps) {
+  const [slides, setSlides] = useState<HeroPhoto[]>(heroPhotos);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const currentPhoto = heroPhotos[currentIndex] ?? null;
+  const [imageReady, setImageReady] = useState(false);
+
+  const currentPhoto = slides[currentIndex] ?? null;
   const subtitleRaw = settings.heroSubtitle?.trim() || '';
   const safeSubtitle = subtitleRaw || 'Моменты, где вы в центре и в своем ритме.';
 
   useEffect(() => {
-    if (heroPhotos.length < 2) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % heroPhotos.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [heroPhotos.length]);
+    setSlides(heroPhotos);
+  }, [heroPhotos]);
 
   useEffect(() => {
-    setCurrentIndex((prev) => (heroPhotos.length === 0 ? 0 : Math.min(prev, heroPhotos.length - 1)));
-  }, [heroPhotos.length]);
+    let cancelled = false;
+
+    const loadRandomSlides = async () => {
+      try {
+        const response = await fetch('/api/hero-photos', { cache: 'no-store' });
+        if (!response.ok) return;
+        const randomSlides = (await response.json()) as HeroPhoto[];
+        if (!Array.isArray(randomSlides) || randomSlides.length === 0 || cancelled) return;
+
+        setSlides((prev) => {
+          const prevIds = prev.map((item) => item.id).join(',');
+          const nextIds = randomSlides.map((item) => item.id).join(',');
+          return prevIds === nextIds ? prev : randomSlides;
+        });
+        setCurrentIndex(0);
+      } catch {
+        // Keep SSR fallback slides when random fetch fails.
+      }
+    };
+
+    loadRandomSlides();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (slides.length < 2) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
+  useEffect(() => {
+    setCurrentIndex((prev) => (slides.length === 0 ? 0 : Math.min(prev, slides.length - 1)));
+  }, [slides.length]);
+
+  useEffect(() => {
+    setImageReady(false);
+  }, [currentPhoto?.id]);
+
+  const title = useMemo(() => settings.heroTitle || 'Фотография вашей истории', [settings.heroTitle]);
 
   return (
     <section className="relative flex h-screen w-full items-center justify-center overflow-hidden text-center">
+      <div className="absolute inset-0 bg-[#111]" />
       {currentPhoto && (
         <div
           key={currentPhoto.id}
@@ -50,34 +85,42 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
             fill
             priority={currentIndex === 0}
             sizes="100vw"
-            className="object-cover"
+            quality={70}
+            className="object-cover transition-opacity duration-500"
             style={{
-              filter: 'blur(10px)',
-              transform: 'scale(1.08)',
+              transform: 'scale(1.04)',
               objectPosition: `${currentPhoto.focalX}% ${currentPhoto.focalY}%`,
+              opacity: imageReady ? 1 : 0,
             }}
+            onLoadingComplete={() => setImageReady(true)}
           />
           <div className="absolute inset-0 bg-black/55" />
           <div
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.92) 100%)',
+                'linear-gradient(180deg, rgba(8,8,8,0.2) 0%, rgba(8,8,8,0.05) 35%, rgba(8,8,8,0.45) 100%), radial-gradient(ellipse 85% 85% at 50% 50%, transparent 56%, rgba(0,0,0,0.55) 81%, rgba(0,0,0,0.9) 100%)',
             }}
           />
         </div>
       )}
 
       <div className="z-10 px-4">
-        <h1 className="mb-4 font-serif text-4xl text-accent md:text-7xl">
-          {settings.heroTitle || 'Фотография вашей истории'}
+        <h1
+          className="mx-auto mb-4 max-w-4xl font-serif text-4xl leading-tight text-[#f5e9cf] md:text-7xl"
+          style={{ textShadow: '0 3px 16px rgba(0,0,0,0.9), 0 0 24px rgba(0,0,0,0.45)' }}
+        >
+          {title}
         </h1>
-        <p className="mx-auto max-w-2xl text-[18px] text-white/85 md:text-[20px]">
+        <p
+          className="mx-auto max-w-2xl text-[18px] text-white/95 md:text-[20px]"
+          style={{ textShadow: '0 2px 10px rgba(0,0,0,0.85)' }}
+        >
           {safeSubtitle}
         </p>
         <a
           href="#gallery"
-          className="mt-8 inline-flex items-center justify-center rounded-none border-[1.5px] border-accent/70 bg-black/20 px-12 py-4 font-medium text-white/95 transition hover:border-accent hover:bg-accent/10"
+          className="mt-8 inline-flex items-center justify-center rounded-none border-[1.5px] border-accent/80 bg-black/35 px-12 py-4 font-medium text-white transition hover:border-accent hover:bg-accent/12"
         >
           Смотреть работы
         </a>

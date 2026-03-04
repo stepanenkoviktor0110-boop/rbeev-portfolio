@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Item = { id: number; title: string; imageUrl: string };
@@ -138,9 +139,13 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
           onClose();
         }}
       >
-        <img
+        <Image
           src={item.imageUrl}
           alt={item.title}
+          width={1800}
+          height={1200}
+          sizes="90vw"
+          quality={80}
           className="max-h-[90vh] w-auto rounded-none object-contain"
           onLoad={() => {
             const rect = imageWrapRef.current?.getBoundingClientRect();

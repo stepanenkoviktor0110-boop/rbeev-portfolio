@@ -7,8 +7,9 @@ import HowItWorks from '@/components/HowItWorks';
 import Navigation from '@/components/Navigation';
 import Reviews from '@/components/Reviews';
 import { prisma } from '@/lib/prisma';
+import type { HeroPhoto } from '@/lib/types';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 const publicSettingsSelect = {
   id: true,
@@ -47,7 +48,15 @@ export default async function HomePage() {
     prisma.settings.upsert({ where: { id: 1 }, update: {}, create: { id: 1 }, select: publicSettingsSelect }),
     prisma.photo.findMany({
       where: { showInGallery: true },
-      include: { category: true },
+      select: {
+        id: true,
+        title: true,
+        imageUrl: true,
+        categoryId: true,
+        sortOrder: true,
+        focalX: true,
+        focalY: true,
+      },
       orderBy: [{ category: { sortOrder: 'asc' } }, { sortOrder: 'asc' }, { id: 'asc' }],
     }),
     prisma.photo.findMany({
@@ -60,7 +69,17 @@ export default async function HomePage() {
       select: { id: true, imageUrl: true, title: true, focalX: true, focalY: true },
       orderBy: { sortOrder: 'asc' },
     }),
-    prisma.category.findMany({ orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] }),
+    prisma.category.findMany({
+      where: {
+        photos: {
+          some: {
+            showInGallery: true,
+          },
+        },
+      },
+      select: { id: true, name: true, sortOrder: true },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    }),
     prisma.busyDate.findMany({
       select: { isoDate: true },
       orderBy: [{ isoDate: 'asc' }],
@@ -73,11 +92,12 @@ export default async function HomePage() {
   ]);
   const telegramLink = settings.telegram ? toTelegramLink(settings.telegram) : '';
   const instagramLink = settings.instagram ? toInstagramLink(settings.instagram) : '';
+  const fallbackHeroPhotos: HeroPhoto[] = heroPhotos.slice(0, 5);
 
   return (
     <main>
       <Navigation />
-      <Hero settings={settings} heroPhotos={heroPhotos} />
+      <Hero settings={settings} heroPhotos={fallbackHeroPhotos} />
       <AvailabilityRibbon busyDates={busyDates.map((item) => item.isoDate)} />
       <Gallery photos={galleryPhotos} categories={categories} />
       <section className="mx-auto flex max-w-6xl items-center justify-center px-4 py-14">
