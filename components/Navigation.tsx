@@ -67,7 +67,10 @@ export default function Navigation() {
 
   return (
     <nav className="sticky top-0 z-20 border-b border-white/10 bg-base/80 backdrop-blur">
-      <div ref={containerRef} className="mx-auto flex max-w-[82.8rem] items-center justify-between gap-6 px-4 py-4">
+      <div
+        ref={containerRef}
+        className="mx-auto flex min-h-[5.2rem] max-w-[82.8rem] items-center justify-center gap-6 px-4 py-[1.3rem] md:min-h-0 md:justify-between md:py-4"
+      >
         <a
           ref={brandRef}
           href="#"
@@ -78,7 +81,10 @@ export default function Navigation() {
         >
           Ваш фотограф — Рамазан Беев
         </a>
-        <div ref={linksRef} className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-xs text-white/80 sm:gap-x-4 sm:text-sm">
+        <div
+          ref={linksRef}
+          className="flex flex-wrap justify-center gap-x-[0.9rem] gap-y-[0.3rem] text-center text-[0.86rem] text-white/80 sm:gap-x-4 sm:text-sm md:justify-end md:text-right"
+        >
           <a href="#gallery">Галерея</a>
           <a href="#about">Обо мне</a>
           <a href="#how-it-works">Как всё устроено</a>

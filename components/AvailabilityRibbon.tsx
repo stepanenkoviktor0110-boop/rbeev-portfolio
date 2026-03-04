@@ -98,14 +98,14 @@ export default function AvailabilityRibbon({ busyDates = [] }: AvailabilityRibbo
       )}
 
       <div className="availability-ribbon overflow-x-auto">
-        <div className="flex min-w-[780px] snap-x snap-mandatory gap-1 md:grid md:min-w-0 md:grid-cols-10 md:gap-2">
+        <div className="flex min-w-[980px] snap-x snap-mandatory gap-1 md:grid md:min-w-[980px] md:grid-cols-10 md:gap-2">
           {days.map((day) => (
             <article
               key={day.iso}
               className={[
-                'group relative flex h-28 w-[78px] flex-none snap-start flex-col items-center justify-center border border-transparent px-2 text-center transition-all duration-200 md:w-auto md:snap-none',
+                'group relative flex h-28 w-[98px] flex-none snap-start flex-col items-center justify-center border border-transparent px-2 text-center transition-all duration-200 md:w-auto md:snap-none',
                 day.busy
-                  ? 'text-white/45 bg-white/[0.01] hover:bg-[#2a1712]'
+                  ? 'border border-[#7a2c1f]/35 bg-[#31140e]/45 text-white/65 hover:bg-[#3c1711]'
                   : 'text-white/90 cursor-pointer hover:border-[#b8963e]/60 hover:bg-[rgb(var(--gold)/0.12)]',
               ].join(' ')}
               onClick={day.busy ? undefined : () => scrollToContactsAndApplyDate(day.iso)}
@@ -123,7 +123,7 @@ export default function AvailabilityRibbon({ busyDates = [] }: AvailabilityRibbo
               }
             >
               {day.busy && (
-                <span className="absolute right-2 top-2 text-white/45" aria-hidden="true">
+                <span className="absolute right-2 top-2 text-[#cc7e69]/85" aria-hidden="true">
                   <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
                     <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Zm3 3a2 2 0 0 1 1 3.73V19h-2v-2.27A2 2 0 0 1 12 13Z" />
                   </svg>
@@ -133,20 +133,20 @@ export default function AvailabilityRibbon({ busyDates = [] }: AvailabilityRibbo
               <span
                 className={[
                   'font-sans text-[10px] uppercase tracking-[0.14em]',
-                  day.busy ? 'text-accent/45' : 'text-accent/40',
+                  day.busy ? 'text-[#cc7e69]/90' : 'text-accent/40',
                 ].join(' ')}
               >
                 {day.weekdayLabel}
               </span>
 
-              <span className={['mt-1 font-serif text-4xl leading-none', day.busy ? 'text-white/50' : 'text-white'].join(' ')}>
+              <span className={['mt-1 font-serif text-4xl leading-none', day.busy ? 'text-[#f0cfc4]/90' : 'text-white'].join(' ')}>
                 {day.dayNumber}
               </span>
 
               <span
                 className={[
                   'pointer-events-none mt-2 min-h-[14px] font-sans text-[11px] leading-none transition-opacity duration-200',
-                  day.busy ? 'text-[#b98b79] opacity-0 group-hover:opacity-100' : 'text-accent/75 opacity-0 group-hover:opacity-100',
+                  day.busy ? 'text-[#d57b64] opacity-0 group-hover:opacity-100' : 'text-accent/75 opacity-0 group-hover:opacity-100',
                 ].join(' ')}
               >
                 {day.busy ? 'Дата занята' : 'Дата свободна'}
