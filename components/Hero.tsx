@@ -99,7 +99,7 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(180deg, rgba(8,8,8,0.2) 0%, rgba(8,8,8,0.05) 35%, rgba(8,8,8,0.45) 100%), radial-gradient(ellipse 85% 85% at 50% 50%, transparent 56%, rgba(0,0,0,0.55) 81%, rgba(0,0,0,0.9) 100%)',
+                'linear-gradient(180deg, rgba(6,6,6,0.3) 0%, rgba(6,6,6,0.16) 35%, rgba(6,6,6,0.58) 100%), radial-gradient(ellipse 85% 85% at 50% 50%, transparent 52%, rgba(0,0,0,0.62) 80%, rgba(0,0,0,0.94) 100%)',
             }}
           />
         </div>
@@ -107,14 +107,14 @@ export default function Hero({ settings, heroPhotos }: HeroProps) {
 
       <div className="z-10 px-4">
         <h1
-          className="mx-auto mb-4 max-w-4xl font-serif text-4xl leading-tight text-[#f5e9cf] md:text-7xl"
-          style={{ textShadow: '0 3px 16px rgba(0,0,0,0.9), 0 0 24px rgba(0,0,0,0.45)' }}
+          className="mx-auto mb-4 max-w-4xl font-serif text-4xl leading-tight text-[#fff4d6] md:text-7xl"
+          style={{ textShadow: '0 4px 18px rgba(0,0,0,0.96), 0 0 28px rgba(0,0,0,0.55)' }}
         >
           {title}
         </h1>
         <p
-          className="mx-auto max-w-2xl text-[18px] text-white/95 md:text-[20px]"
-          style={{ textShadow: '0 2px 10px rgba(0,0,0,0.85)' }}
+          className="mx-auto max-w-2xl text-[18px] text-white md:text-[20px]"
+          style={{ textShadow: '0 3px 12px rgba(0,0,0,0.9)' }}
         >
           {safeSubtitle}
         </p>

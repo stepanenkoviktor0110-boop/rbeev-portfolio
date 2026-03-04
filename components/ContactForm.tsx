@@ -245,7 +245,7 @@ export default function ContactForm({
           disabled={status === 'sending' || !consentChecked || !validName || !validContact || !validMessage}
           className="rounded-none bg-[#c9a84c] px-4 py-2 font-medium text-black shadow-[0_8px_18px_rgba(201,168,76,0.28)] transition hover:bg-[#d5b45a] disabled:opacity-60"
         >
-          {status === 'sending' ? 'Отправка...' : 'Написать Рамазану'}
+          {status === 'sending' ? 'Отправка...' : 'Договориться о съёмке'}
         </button>
         {status === 'error' && (
           <p className="text-sm text-red-400">{errorMessage || 'Ошибка отправки. Попробуйте ещё раз.'}</p>

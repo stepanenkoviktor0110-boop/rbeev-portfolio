@@ -10,7 +10,7 @@ type DayItem = {
   iso: string;
   dayNumber: string;
   weekdayLabel: string;
-  monthYearLabel: string;
+  date: Date;
   busy: boolean;
 };
 
@@ -25,6 +25,26 @@ function formatMonthYear(date: Date): string {
   const month = new Intl.DateTimeFormat('ru-RU', { month: 'long' }).format(date).toLowerCase();
   const year = String(date.getFullYear());
   return `${month} ${year}`;
+}
+
+function formatMonth(date: Date): string {
+  return new Intl.DateTimeFormat('ru-RU', { month: 'long' }).format(date).toLowerCase();
+}
+
+function buildMonthCaption(days: DayItem[]): string {
+  if (days.length === 0) return '';
+
+  const first = days[0].date;
+  const last = days[days.length - 1].date;
+  const sameMonth = first.getMonth() === last.getMonth() && first.getFullYear() === last.getFullYear();
+  if (sameMonth) return formatMonthYear(first);
+
+  const firstMonth = capitalizeFirst(formatMonth(first));
+  const lastMonth = capitalizeFirst(formatMonth(last));
+  const sameYear = first.getFullYear() === last.getFullYear();
+  if (sameYear) return `${firstMonth}-${lastMonth}`;
+
+  return `${firstMonth} ${first.getFullYear()}-${lastMonth} ${last.getFullYear()}`;
 }
 
 function toIsoDateLocal(date: Date): string {
@@ -51,7 +71,7 @@ function buildDays(busyDates: Set<string>): DayItem[] {
       iso,
       dayNumber: String(date.getDate()),
       weekdayLabel: capitalizeFirst(weekday),
-      monthYearLabel: formatMonthYear(date),
+      date,
       busy: busyDates.has(iso),
     };
   });
@@ -66,7 +86,7 @@ function scrollToContactsAndApplyDate(isoDate: string) {
 
 export default function AvailabilityRibbon({ busyDates = [] }: AvailabilityRibbonProps) {
   const days = useMemo(() => buildDays(new Set(busyDates)), [busyDates]);
-  const monthCaption = days[0]?.monthYearLabel ?? '';
+  const monthCaption = useMemo(() => buildMonthCaption(days), [days]);
 
   return (
     <section aria-label="Доступность дат" className="mx-auto w-full max-w-6xl px-4 py-14">
