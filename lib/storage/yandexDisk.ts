@@ -122,12 +122,26 @@ async function uploadBinary(uploadUrl: string, buffer: Buffer, contentType: stri
   if (!res.ok) throw new Error(`Upload failed with status ${res.status}`);
 }
 
-async function publishResource(path: string) {
+async function publishResource(path: string): Promise<string> {
   const url = `${YANDEX_API_BASE}/resources/publish?path=${encodeURIComponent(path)}`;
   const res = await fetch(url, { method: 'PUT', headers: authHeaders() });
   if (!res.ok && res.status !== 409) {
     throw new Error(`Could not publish resource, status ${res.status}`);
   }
+  // Yandex returns href with the actual internal resource path — use it for getResource
+  if (res.ok) {
+    try {
+      const body = (await res.json()) as { href?: string };
+      if (body.href) {
+        const hrefUrl = new URL(body.href);
+        const actualPath = hrefUrl.searchParams.get('path');
+        if (actualPath) return actualPath;
+      }
+    } catch {
+      // fall through to original path
+    }
+  }
+  return path;
 }
 
 async function getResource(path: string) {
@@ -154,9 +168,9 @@ async function uploadBufferToDisk(buffer: Buffer, originalName: string, mimeType
   const storageKey = buildStorageKey(originalName, mimeType);
   const uploadUrl = await getUploadUrl(storageKey);
   await uploadBinary(uploadUrl, buffer, mimeType || 'application/octet-stream');
-  await publishResource(storageKey);
+  const actualPath = await publishResource(storageKey);
 
-  const resource = await getResource(storageKey);
+  const resource = await getResource(actualPath);
   const imageUrl = resource.file || resource.public_url;
   if (!imageUrl) throw new Error('Не удалось получить публичную ссылку на файл');
 
@@ -244,10 +258,10 @@ async function downloadPublicFile(publicKey: string, path: string) {
     const response = await fetch(href);
     if (!response.ok) throw new Error(`Ошибка скачивания файла из папки (${response.status})`);
     return Buffer.from(await response.arrayBuffer());
-  } catch {
+  } catch (err) {
     // Fallback: try just the filename without parent path components
     const filename = `/${path.split('/').filter(Boolean).pop() || ''}`;
-    if (filename === path) throw; // already tried this exact path, don't retry
+    if (filename === path) throw err; // already tried this exact path, don't retry
     const href = await getPublicDownloadUrl(publicKey, filename);
     const response = await fetch(href);
     if (!response.ok) throw new Error(`Ошибка скачивания файла из папки (${response.status})`);
