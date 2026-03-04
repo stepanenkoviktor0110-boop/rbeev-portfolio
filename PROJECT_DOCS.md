@@ -87,7 +87,6 @@ app/
     photos/[id]/route.ts
     photos/image/route.ts         — GET: прокси-роут для изображений
     photos/import-folder/route.ts — POST: импорт папки (без копирования)
-    photos/repair-urls/route.ts   — POST: исправить старые imageUrl в БД
     categories/route.ts
     requests/route.ts
     requests/[id]/route.ts
@@ -212,26 +211,20 @@ parseJsonIds(value)            // JSON-массив числовых ID
 - Прогресс: фаза `start` (чтение папки) → фаза `db` (создание записей).
 - Ссылки вида `/client/disk/...` отклоняются с понятной ошибкой.
 
-### 7.3 Кнопка «Починить URL фото»
-- `POST /api/photos/repair-urls`
-- Находит фото с `storageKey`, у которых `imageUrl` не начинается с `/api/photos/image`.
-- Обновляет `imageUrl` в БД на прокси-формат.
-- Используется для исправления устаревших записей.
-
-### 7.4 Занятые даты
+### 7.3 Занятые даты
 - Управление в `Админка → Заявки → Календарь`.
 - Без заявки занять дату нельзя.
 - Нормализация даты: локальный `YYYY-MM-DD` без `toISOString()` (исключает сдвиг timezone).
 
-### 7.5 Настройки
+### 7.4 Настройки
 - Тексты/контакты/hero/«обо мне»/«как устроено».
 - Смена пароля (bcrypt-хэш в `Settings.adminPasswordHash`).
 
-### 7.6 Категории
+### 7.5 Категории
 - Полный CRUD, drag-and-drop порядок (кнопки ↑↓).
 - Предупреждение при удалении категории с фото.
 
-### 7.7 Отзывы
+### 7.6 Отзывы
 - CRUD + публикация/скрытие + изменение порядка.
 
 ## 8. Схема БД (Prisma)
@@ -280,7 +273,6 @@ Settings {
 | `DELETE /api/photos/[id]` | Удаление из БД + best-effort удаление с диска |
 | `GET /api/photos/image` | Прокси-роут: стримит изображение с Яндекс.Диска |
 | `POST /api/photos/import-folder` | Импорт папки (NDJSON-стрим прогресса) |
-| `POST /api/photos/repair-urls` | Исправить устаревшие imageUrl в БД |
 | `GET /api/categories` | Список категорий |
 | `POST /api/categories` | Создать категорию |
 | `PUT /api/categories` | Редактировать / переупорядочить |
