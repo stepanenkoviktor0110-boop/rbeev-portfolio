@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const YANDEX_API_BASE = 'https://cloud-api.yandex.net/v1/disk';
 
-/** Ensure path has the disk: prefix Yandex API requires */
-function normalizeDiskPath(path: string): string {
-  if (/^(disk:|app:|trash:)/.test(path)) return path;
-  return `disk:${path.startsWith('/') ? '' : '/'}${path}`;
+/** Normalize to plain /path format — Yandex API accepts both disk:/path and /path */
+function toPlainPath(path: string): string {
+  // Strip disk:/app:/trash: schema prefix if present, ensure leading slash
+  const stripped = path.replace(/^(disk:|app:|trash:)/, '');
+  return stripped.startsWith('/') ? stripped : `/${stripped}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
   const token = process.env.YANDEX_DISK_TOKEN?.trim();
   if (!token) return new NextResponse('Storage not configured', { status: 500 });
 
-  const diskPath = normalizeDiskPath(key);
+  const diskPath = toPlainPath(key);
   const url = `${YANDEX_API_BASE}/resources?path=${encodeURIComponent(diskPath)}&fields=file`;
 
   const res = await fetch(url, {
