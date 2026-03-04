@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Item = { id: number; title: string; imageUrl: string };
+const LIGHTBOX_QUALITY = 72;
+const LIGHTBOX_OPTIMIZED_WIDTH_MAX = 1920;
 
 interface Props {
   items: Item[];
@@ -55,6 +57,28 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
     window.addEventListener('resize', recalcArrowPos);
     return () => window.removeEventListener('resize', recalcArrowPos);
   }, [index, items.length]);
+
+  useEffect(() => {
+    if (index === null || typeof window === 'undefined') return;
+
+    const preloadOptimized = (targetIndex: number) => {
+      const target = items[targetIndex];
+      if (!target) return;
+
+      const dpr = Math.min(Math.ceil(window.devicePixelRatio || 1), 2);
+      const width = Math.min(
+        LIGHTBOX_OPTIMIZED_WIDTH_MAX,
+        Math.max(640, Math.ceil(window.innerWidth * dpr)),
+      );
+      const optimizedUrl = `/_next/image?url=${encodeURIComponent(target.imageUrl)}&w=${width}&q=${LIGHTBOX_QUALITY}`;
+      const img = new window.Image();
+      img.decoding = 'async';
+      img.src = optimizedUrl;
+    };
+
+    preloadOptimized(index + 1);
+    preloadOptimized(index - 1);
+  }, [index, items]);
 
   if (index === null || !items[index]) return null;
   const item = items[index];
@@ -108,23 +132,33 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
       )}
 
       {hasPrev && (
-        <span
-          className="pointer-events-none absolute top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 text-5xl font-thin leading-none text-white/40"
+        <button
+          type="button"
+          aria-label="Предыдущее фото"
+          onClick={(e) => {
+            e.stopPropagation();
+            goPrev();
+          }}
+          className="absolute top-1/2 z-30 flex h-16 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center bg-transparent text-5xl font-thin leading-none text-white/50 transition hover:text-white/80"
           style={{ left: `${arrowPos.leftX}px` }}
-          aria-hidden="true"
         >
           &#8249;
-        </span>
+        </button>
       )}
 
       {hasNext && (
-        <span
-          className="pointer-events-none absolute top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 text-5xl font-thin leading-none text-white/40"
+        <button
+          type="button"
+          aria-label="Следующее фото"
+          onClick={(e) => {
+            e.stopPropagation();
+            goNext();
+          }}
+          className="absolute top-1/2 z-30 flex h-16 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center bg-transparent text-5xl font-thin leading-none text-white/50 transition hover:text-white/80"
           style={{ left: `${arrowPos.rightX}px` }}
-          aria-hidden="true"
         >
           &#8250;
-        </span>
+        </button>
       )}
 
       <div
@@ -142,10 +176,11 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
         <Image
           src={item.imageUrl}
           alt={item.title}
-          width={1800}
-          height={1200}
-          sizes="90vw"
-          quality={80}
+          width={1600}
+          height={1067}
+          sizes="(max-width: 768px) 100vw, 90vw"
+          quality={LIGHTBOX_QUALITY}
+          priority
           className="max-h-[90vh] w-auto rounded-none object-contain"
           onLoad={() => {
             const rect = imageWrapRef.current?.getBoundingClientRect();
