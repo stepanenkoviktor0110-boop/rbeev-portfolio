@@ -71,7 +71,7 @@
 app/
   page.tsx                        — публичная главная
   layout.tsx
-  icon.svg                        — base SVG icon (РБ)
+  icon.png                        — base app icon (РБ)
   favicon.ico                     — fallback favicon for browser UI/address bar
   apple-icon.png                  — icon for Apple devices
   manifest.ts                     — Web App Manifest (icons + theme metadata)
