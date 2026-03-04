@@ -106,7 +106,7 @@ export default async function HomePage() {
       <About text={settings.aboutText} photos={aboutPhotos} />
       <HowItWorks title={settings.workflowTitle} itemsJson={settings.workflowItems} />
       <section id="contacts" className="fade-edges mx-auto grid max-w-6xl gap-8 px-4 py-16 md:grid-cols-2">
-        <div className="card space-y-5 p-6">
+        <div className="card flex h-full flex-col justify-center space-y-5 p-6">
           <h2 className="section-title text-4xl md:text-5xl">Напишите — и мы найдём ваш кадр</h2>
 
           <div className="space-y-2 text-white/80">
