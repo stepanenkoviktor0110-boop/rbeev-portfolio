@@ -58,7 +58,8 @@ export async function POST(request: Request) {
   const description = String(formData.get('description') || '').trim() || null;
   const categoryId = Number(formData.get('categoryId'));
 
-  if (!(file instanceof File)) return NextResponse.json({ error: 'Файл обязателен' }, { status: 400 });
+  // Use Blob instead of File — File global is not available in Node.js 18 runtime
+  if (!(file instanceof Blob)) return NextResponse.json({ error: 'Файл обязателен' }, { status: 400 });
   if (!title || title.length > 200) {
     return NextResponse.json({ error: 'Некорректное название' }, { status: 400 });
   }
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const uploaded = await uploadImageToYandexDisk(file);
+    const uploaded = await uploadImageToYandexDisk(file as File);
     const maxOrder = await prisma.photo.aggregate({ _max: { sortOrder: true } });
     const photo = await prisma.photo.create({
       data: {
