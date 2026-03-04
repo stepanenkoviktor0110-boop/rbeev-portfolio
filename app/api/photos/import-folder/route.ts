@@ -126,6 +126,7 @@ export async function POST(request: Request) {
           send({
             type: 'done',
             importedCount: importedFolder.imported.length,
+            skippedCount: importedFolder.skipped.length,
             category,
             categoryCreated: created,
           });

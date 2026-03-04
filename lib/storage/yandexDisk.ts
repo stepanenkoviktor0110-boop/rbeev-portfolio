@@ -245,8 +245,10 @@ async function downloadPublicFile(publicKey: string, path: string) {
     if (!response.ok) throw new Error(`Ошибка скачивания файла из папки (${response.status})`);
     return Buffer.from(await response.arrayBuffer());
   } catch {
-    const fallbackPath = path.startsWith('/') ? path : `/${path.split('/').pop() || ''}`;
-    const href = await getPublicDownloadUrl(publicKey, fallbackPath);
+    // Fallback: try just the filename without parent path components
+    const filename = `/${path.split('/').filter(Boolean).pop() || ''}`;
+    if (filename === path) throw; // already tried this exact path, don't retry
+    const href = await getPublicDownloadUrl(publicKey, filename);
     const response = await fetch(href);
     if (!response.ok) throw new Error(`Ошибка скачивания файла из папки (${response.status})`);
     return Buffer.from(await response.arrayBuffer());
@@ -269,17 +271,23 @@ export async function importPublicFolderFromYandexDisk(
   if (files.length === 0) throw new Error('В папке не найдено изображений');
 
   const imported: Array<UploadResult & { title: string }> = [];
+  const skipped: string[] = [];
   const total = files.length;
   for (let index = 0; index < files.length; index += 1) {
     const file = files[index];
-    const binary = await downloadPublicFile(publicKey, file.path);
-    const uploaded = await uploadBufferToDisk(binary, file.name, file.mime_type);
-    imported.push({ ...uploaded, title: titleFromName(file.name) });
+    try {
+      const binary = await downloadPublicFile(publicKey, file.path);
+      const uploaded = await uploadBufferToDisk(binary, file.name, file.mime_type);
+      imported.push({ ...uploaded, title: titleFromName(file.name) });
+    } catch {
+      skipped.push(file.name);
+    }
     options?.onProgress?.({ phase: 'transfer', completed: index + 1, total });
   }
 
   return {
     folderName,
     imported,
+    skipped,
   };
 }
