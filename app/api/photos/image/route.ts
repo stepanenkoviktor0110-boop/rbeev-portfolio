@@ -37,11 +37,19 @@ export async function GET(req: NextRequest) {
     return new NextResponse('No download URL from Yandex', { status: 404 });
   }
 
-  // Yandex signed URLs are valid for ~30 min; cache for 20 min
-  return NextResponse.redirect(body.file, {
-    status: 302,
+  // Stream image bytes through our server instead of redirecting.
+  // Direct Yandex CDN URLs return disposition=attachment which browsers
+  // refuse to render in <img> tags (ERR_INVALID_RESPONSE).
+  const imgRes = await fetch(body.file, { cache: 'no-store' });
+  if (!imgRes.ok || !imgRes.body) {
+    return new NextResponse('Failed to fetch image from Yandex storage', { status: 502 });
+  }
+
+  const contentType = imgRes.headers.get('Content-Type') ?? 'image/jpeg';
+  return new NextResponse(imgRes.body, {
     headers: {
-      'Cache-Control': 'public, max-age=1200, stale-while-revalidate=60',
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
     },
   });
 }
