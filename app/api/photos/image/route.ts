@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const YANDEX_API_BASE = 'https://cloud-api.yandex.net/v1/disk';
 
+/** Ensure path has the disk: prefix Yandex API requires */
+function normalizeDiskPath(path: string): string {
+  if (/^(disk:|app:|trash:)/.test(path)) return path;
+  return `disk:${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
 export async function GET(req: NextRequest) {
   const key = req.nextUrl.searchParams.get('key');
   if (!key) return new NextResponse('Missing key', { status: 400 });
@@ -9,22 +15,25 @@ export async function GET(req: NextRequest) {
   const token = process.env.YANDEX_DISK_TOKEN?.trim();
   if (!token) return new NextResponse('Storage not configured', { status: 500 });
 
-  const url = `${YANDEX_API_BASE}/resources?path=${encodeURIComponent(key)}&fields=file`;
+  const diskPath = normalizeDiskPath(key);
+  const url = `${YANDEX_API_BASE}/resources?path=${encodeURIComponent(diskPath)}&fields=file`;
+
   const res = await fetch(url, {
     headers: { Authorization: `OAuth ${token}` },
-    // Don't cache in Next.js layer — we control caching via Cache-Control on the response
     cache: 'no-store',
   });
 
   if (!res.ok) {
-    console.error(`[image-proxy] Yandex API error ${res.status} for key=${key}`);
-    return new NextResponse('Image not found', { status: 404 });
+    let errText = '';
+    try { errText = await res.text(); } catch { /* ignore */ }
+    console.error(`[image-proxy] Yandex ${res.status} for key=${key} (diskPath=${diskPath}): ${errText}`);
+    return new NextResponse(`Yandex error ${res.status}: ${errText}`, { status: 502 });
   }
 
   const body = (await res.json()) as { file?: string };
   if (!body.file) {
-    console.error(`[image-proxy] No file URL returned for key=${key}`);
-    return new NextResponse('Image not available', { status: 404 });
+    console.error(`[image-proxy] No file URL for key=${key}`);
+    return new NextResponse('No download URL from Yandex', { status: 404 });
   }
 
   // Yandex signed URLs are valid for ~30 min; cache for 20 min
