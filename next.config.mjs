@@ -17,6 +17,7 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1600, 1920],
     remotePatterns: [
       { protocol: 'https', hostname: 'downloader.disk.yandex.ru' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },

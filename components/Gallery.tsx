@@ -1,9 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { displayCategoryName } from '@/lib/categoryLabel';
 import { COOKIE_CONSENT_EVENT, loadSitePrefs, saveSitePrefs } from '@/lib/cookieConsent';
+import { prefetchOptimizedImage } from '@/lib/imagePrefetch';
 import Lightbox from './Lightbox';
 
 type GalleryCategory = {
@@ -94,6 +95,26 @@ export default function Gallery({ photos, categories }: { photos: GalleryPhoto[]
     });
   }, [active, prefsReady]);
 
+  const prefetchForLightbox = useCallback((index: number) => {
+    const current = filtered[index];
+    if (!current) return;
+
+    prefetchOptimizedImage(current.imageUrl, { maxWidth: 1600, quality: 70 });
+
+    const next = filtered[index + 1];
+    if (next) {
+      prefetchOptimizedImage(next.imageUrl, { maxWidth: 1600, quality: 70 });
+    }
+  }, [filtered]);
+
+  useEffect(() => {
+    if (filtered.length === 0) return;
+    const timer = window.setTimeout(() => {
+      prefetchForLightbox(0);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [filtered, prefetchForLightbox]);
+
   const visibleItems = isAllCategory
     ? filtered.slice(0, INITIAL_VISIBLE)
     : showAll
@@ -137,7 +158,23 @@ export default function Gallery({ photos, categories }: { photos: GalleryPhoto[]
           return (
             <button
               key={photo.id}
-              onClick={() => setOpenedIndex(indexInFiltered >= 0 ? indexInFiltered : null)}
+              onClick={() => {
+                if (indexInFiltered < 0) {
+                  setOpenedIndex(null);
+                  return;
+                }
+                prefetchForLightbox(indexInFiltered);
+                setOpenedIndex(indexInFiltered);
+              }}
+              onMouseEnter={() => {
+                if (indexInFiltered >= 0) prefetchForLightbox(indexInFiltered);
+              }}
+              onTouchStart={() => {
+                if (indexInFiltered >= 0) prefetchForLightbox(indexInFiltered);
+              }}
+              onFocus={() => {
+                if (indexInFiltered >= 0) prefetchForLightbox(indexInFiltered);
+              }}
               className="group relative block w-full overflow-hidden text-left"
             >
               <div className={`relative w-full overflow-hidden ${aspectClass}`}>

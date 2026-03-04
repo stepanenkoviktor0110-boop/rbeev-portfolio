@@ -2,10 +2,11 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { prefetchOptimizedImage } from '@/lib/imagePrefetch';
 
 type Item = { id: number; title: string; imageUrl: string };
-const LIGHTBOX_QUALITY = 72;
-const LIGHTBOX_OPTIMIZED_WIDTH_MAX = 1920;
+const LIGHTBOX_QUALITY = 70;
+const LIGHTBOX_OPTIMIZED_WIDTH_MAX = 1600;
 
 interface Props {
   items: Item[];
@@ -21,6 +22,7 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
   const touchStartY = useRef<number | null>(null);
   const imageWrapRef = useRef<HTMLDivElement | null>(null);
   const [arrowPos, setArrowPos] = useState<{ leftX: number; rightX: number }>({ leftX: 24, rightX: 24 });
+  const [useUnoptimizedFallback, setUseUnoptimizedFallback] = useState(false);
 
   const goPrev = useCallback(() => {
     if (!hasPrev || index === null) return;
@@ -30,6 +32,11 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
     if (!hasNext || index === null) return;
     onNavigate(index + 1);
   }, [hasNext, index, onNavigate]);
+
+  useEffect(() => {
+    if (index === null) return;
+    setUseUnoptimizedFallback(false);
+  }, [index]);
 
   useEffect(() => {
     if (index === null) return;
@@ -64,18 +71,13 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
     const preloadOptimized = (targetIndex: number) => {
       const target = items[targetIndex];
       if (!target) return;
-
-      const dpr = Math.min(Math.ceil(window.devicePixelRatio || 1), 2);
-      const width = Math.min(
-        LIGHTBOX_OPTIMIZED_WIDTH_MAX,
-        Math.max(640, Math.ceil(window.innerWidth * dpr)),
-      );
-      const optimizedUrl = `/_next/image?url=${encodeURIComponent(target.imageUrl)}&w=${width}&q=${LIGHTBOX_QUALITY}`;
-      const img = new window.Image();
-      img.decoding = 'async';
-      img.src = optimizedUrl;
+      prefetchOptimizedImage(target.imageUrl, {
+        maxWidth: LIGHTBOX_OPTIMIZED_WIDTH_MAX,
+        quality: LIGHTBOX_QUALITY,
+      });
     };
 
+    preloadOptimized(index);
     preloadOptimized(index + 1);
     preloadOptimized(index - 1);
   }, [index, items]);
@@ -176,12 +178,16 @@ export default function Lightbox({ items, index, onClose, onNavigate }: Props) {
         <Image
           src={item.imageUrl}
           alt={item.title}
-          width={1600}
-          height={1067}
-          sizes="(max-width: 768px) 100vw, 90vw"
+          width={1440}
+          height={960}
+          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1440px"
           quality={LIGHTBOX_QUALITY}
+          unoptimized={useUnoptimizedFallback}
           priority
           className="max-h-[90vh] w-auto rounded-none object-contain"
+          onError={() => {
+            if (!useUnoptimizedFallback) setUseUnoptimizedFallback(true);
+          }}
           onLoad={() => {
             const rect = imageWrapRef.current?.getBoundingClientRect();
             if (!rect) return;
